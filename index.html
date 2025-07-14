@@ -290,27 +290,89 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
             }
 
             window.popup = L.popup({ minWidth: 800 })
-              .setContent(`<b>${p.id}</b><br>
-              along_dist: ${p.along_dist?.toFixed(2)}<br>
-              along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
-              origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
-              destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
-              beach_slope: ${p.beach_slope}<br>
-              n_points: ${p.n_points}<br>
-              n_points_nonan: ${p.n_points_nonan}<br>
-              orientation: ${p.orientation?.toFixed(2)}<br>
-              trend: ${p.trend?.toFixed(2)} m/year<br>
-              R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
-              mae: ${p.mae?.toFixed(2)}<br>
-              mse: ${p.mse?.toFixed(2)}<br>
-              rmse: ${p.rmse?.toFixed(2)}<br>
-              site: ${p.site_id}<br>
-              ${download}
-              ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
-              <div id="plot"></div>
+              .setContent(`
+              <style>
+                .tab-buttons {
+                  display: flex;
+                  margin-bottom: 8px;
+                }
+                .tab-buttons button {
+                  flex: 1;
+                  padding: 6px;
+                  cursor: pointer;
+                  background-color: #eee;
+                  border: none;
+                  outline: none;
+                }
+                .tab-buttons button.active {
+                  background-color: #ccc;
+                }
+                .tab-content {
+                  display: none;
+                }
+                .tab-content.active {
+                  display: block;
+                }
+              </style>
+              <div class="tab-buttons">
+                <button class="tab-button active" data-tab="tab1">Info</button>
+                <button class="tab-button" data-tab="tab2">Debug</button>
+              </div>
+              <div id="tab1" class="tab-content active">
+                <b>${p.id}</b><br>
+                along_dist: ${p.along_dist?.toFixed(2)}<br>
+                along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
+                origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
+                destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
+                beach_slope: ${p.beach_slope}<br>
+                n_points: ${p.n_points}<br>
+                n_points_nonan: ${p.n_points_nonan}<br>
+                orientation: ${p.orientation?.toFixed(2)}<br>
+                trend: ${p.trend?.toFixed(2)} m/year<br>
+                R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
+                mae: ${p.mae?.toFixed(2)}<br>
+                mse: ${p.mse?.toFixed(2)}<br>
+                rmse: ${p.rmse?.toFixed(2)}<br>
+                site: ${p.site_id}<br>
+                ${download}
+                ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
+                <!-- <div id="plot"></div> -->
+              </div>
+              <div id="tab2" class="tab-content">
+                <iframe id="debug-iframe" style="width: 100%; border: none;" height="400"></iframe>
+              </div>
+              <div id="debug-plot"></div>
             `)
               .setLatLng(e.latlng)
               .addTo(map);
+              setTimeout(() => {
+                const buttons = document.querySelectorAll('.tab-button');
+                const tabs = document.querySelectorAll('.tab-content');
+
+                buttons.forEach(btn => {
+                  btn.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    tabs.forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+
+                    // Custom tab2 logic for debug tab
+                    const tabId = btn.dataset.tab;
+                    if (tabId === "tab2") {
+                      const iframe = document.getElementById('debug-iframe');
+                      iframe.srcdoc = "<p>compiling micropublication...</p>";
+                      fetch('../publication/test.html')
+                        .then(r => r.text())
+                        .then(html => {
+                          iframe.srcdoc = html;
+                        })
+                        .catch(err => {
+                          iframe.srcdoc = "<p>Failed to load debug info.</p>";
+                        });
+                    }
+                  });
+                });
+              }, 0);
             Papa.parse(url, {
               download: true,
               header: true,
@@ -351,7 +413,12 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                     hoverformat: '.1f'
                   }
                 };
-                Plotly.newPlot("plot", data, layout);
+                window.popup.addTo(map);
+                setTimeout(() => {
+                  if (document.getElementById("debug-plot")) {
+                    Plotly.newPlot("debug-plot", data, layout);
+                  }
+                }, 0);
                 var px = map.project(e.latlng);
                 console.log(px)
                 px.y -= 400;
