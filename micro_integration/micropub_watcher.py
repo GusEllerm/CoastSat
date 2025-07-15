@@ -34,10 +34,6 @@ class MicroPubHandler(FileSystemEventHandler):
             print("⚠️  No 'id' field in request.")
             return
 
-        unique_id = f"{p_id}"
-        run_stencila_pipeline(p_id, unique_id)
-        print(f"🔗 Micropublication available at tmp/{unique_id}.html")
-
 def run_stencila_pipeline(p_id, unique_id):
     base = os.path.join(TMP_DIR, unique_id)
     try:
@@ -68,7 +64,8 @@ def handle_request():
     if not p_id:
         return jsonify({"error": "Missing 'id' field"}), 400
 
-    filename = run_stencila_pipeline(p_id, p_id)
+    unique_id = f"{p_id}_{uuid.uuid4().hex}"
+    filename = run_stencila_pipeline(p_id, unique_id)
     if filename:
         return jsonify({"filename": filename}), 200
     else:
