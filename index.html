@@ -83,6 +83,54 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       line-height: inherit;
     }
   </style>
+  <!-- Toggle switch styles -->
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+      vertical-align: middle;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      background-color: #ccc;
+      transition: .4s;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+  </style>
 </head>
 
 <body>
@@ -99,7 +147,8 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
     <!-- Tab panes -->
     <div class="leaflet-sidebar-content">
       <div class="leaflet-sidebar-pane" id="home">
-        <div id="attribution">Code for shoreline detection provided by K. Vos, M. Harley and K. Splinter (University of
+        <div id="attribution">
+          Code for shoreline detection provided by K. Vos, M. Harley and K. Splinter (University of
           New South Wales)<br>
           <a
             href="https://www.unsw.edu.au/research/wrl/our-research/coastsat">https://www.unsw.edu.au/research/wrl/our-research/coastsat</a><br><br>
@@ -118,12 +167,20 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           If you would like to suggest a new site, please use the polyline tool on the left to draw a reference
           shoreline. Once you do so, you can click the below button to send your shoreline to us via email.<br>
           <a id="mailto" target="_blank" class="btn btn-primary" disabled>Email Us</a>
+          <hr>
+          <div style="margin-top: 10px;">
+            <label for="microToggle" style="display: inline-block; margin-right: 10px;"><strong>Enable Micropublications</strong></label>
+            <label class="switch">
+              <input type="checkbox" id="microToggle">
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
     <script>
 
-      var map = L.map('map', {
+      window.map = L.map('map', {
         center: [-42, 172],
         zoom: 6,
         //worldCopyJump: true
@@ -289,90 +346,92 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
               download = `<a href="${url}" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
             }
 
-            window.popup = L.popup({ minWidth: 800 })
-              .setContent(`
-              <style>
-                .tab-buttons {
-                  display: flex;
-                  margin-bottom: 8px;
-                }
-                .tab-buttons button {
-                  flex: 1;
-                  padding: 6px;
-                  cursor: pointer;
-                  background-color: #eee;
-                  border: none;
-                  outline: none;
-                }
-                .tab-buttons button.active {
-                  background-color: #ccc;
-                }
-                .tab-content {
-                  display: none;
-                }
-                .tab-content.active {
-                  display: block;
-                }
-              </style>
-              <div class="tab-buttons">
-                <button class="tab-button active" data-tab="tab1">Info</button>
-                <button class="tab-button" data-tab="tab2">Debug</button>
-              </div>
-              <div id="tab1" class="tab-content active">
-                <b>${p.id}</b><br>
-                along_dist: ${p.along_dist?.toFixed(2)}<br>
-                along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
-                origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
-                destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
-                beach_slope: ${p.beach_slope}<br>
-                n_points: ${p.n_points}<br>
-                n_points_nonan: ${p.n_points_nonan}<br>
-                orientation: ${p.orientation?.toFixed(2)}<br>
-                trend: ${p.trend?.toFixed(2)} m/year<br>
-                R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
-                mae: ${p.mae?.toFixed(2)}<br>
-                mse: ${p.mse?.toFixed(2)}<br>
-                rmse: ${p.rmse?.toFixed(2)}<br>
-                site: ${p.site_id}<br>
-                ${download}
-                ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
-                <!-- <div id="plot"></div> -->
-              </div>
-              <div id="tab2" class="tab-content">
-                <iframe id="debug-iframe" style="width: 100%; border: none;" height="400"></iframe>
-              </div>
-              <div id="debug-plot"></div>
-            `)
-              .setLatLng(e.latlng)
-              .addTo(map);
-              setTimeout(() => {
-                const buttons = document.querySelectorAll('.tab-button');
-                const tabs = document.querySelectorAll('.tab-content');
-
-                buttons.forEach(btn => {
-                  btn.addEventListener('click', () => {
-                    buttons.forEach(b => b.classList.remove('active'));
-                    tabs.forEach(t => t.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(btn.dataset.tab).classList.add('active');
-
-                    // Custom tab2 logic for debug tab
-                    const tabId = btn.dataset.tab;
-                    if (tabId === "tab2") {
-                      const iframe = document.getElementById('debug-iframe');
-                      iframe.srcdoc = "<p>compiling micropublication...</p>";
-                      fetch('../publication/test.html')
-                        .then(r => r.text())
-                        .then(html => {
-                          iframe.srcdoc = html;
-                        })
-                        .catch(err => {
-                          iframe.srcdoc = "<p>Failed to load debug info.</p>";
-                        });
+            if (window.ENABLE_MICROPUBLICATIONS) {
+              initMicropublicationPopup(p, g, e, url, window.map, download, debug);
+            }
+            else {
+              window.popup = L.popup({ minWidth: 800 })
+                .setContent(`
+                    <b>${p.id}</b><br>
+                    along_dist: ${p.along_dist?.toFixed(2)}<br>
+                    along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
+                    origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
+                    destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
+                    beach_slope: ${p.beach_slope}<br>
+                    n_points: ${p.n_points}<br>
+                    n_points_nonan: ${p.n_points_nonan}<br>
+                    orientation: ${p.orientation?.toFixed(2)}<br>
+                    trend: ${p.trend?.toFixed(2)} m/year<br>
+                    R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
+                    mae: ${p.mae?.toFixed(2)}<br>
+                    mse: ${p.mse?.toFixed(2)}<br>
+                    rmse: ${p.rmse?.toFixed(2)}<br>
+                    site: ${p.site_id}<br>
+                    ${download}
+                    ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
+                    <div id="plot"></div>
+                  `)
+                .setLatLng(e.latlng)
+                .addTo(map);
+              Papa.parse(url, {
+                download: true,
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                  console.log(results)
+                  var filtered_data = results.data.filter(d => d[p.id])
+                  var dates = filtered_data.map(d => d.dates)
+                  var values = filtered_data.map(d => d[p.id])
+                  var satname = filtered_data.map(d => d.satname)
+                  var mean = Plotly.d3.mean(values)
+                  values = values.map(v => v ? v - mean : v)
+                  console.log(dates, values)
+                  var min_date = new Date(results.data[0].dates)
+                  var max_date = new Date(results.data[results.data.length - 1].dates)
+                  var datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25
+                  var data = [{
+                    type: "scatter",
+                    mode: "lines+markers",
+                    name: "chainage",
+                    x: dates,
+                    y: values,
+                  }, {
+                    type: "line",
+                    x: [min_date, max_date],
+                    y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
+                    name: "trendline"
+                  }];
+                  var layout = {
+                    title: `Time series for ${p.id}`,
+                    xaxis: {
+                      title: "Date/Time"
+                    },
+                    yaxis: {
+                      title: "cross-shore change [m]",
+                      hoverformat: '.1f'
                     }
-                  });
-                });
-              }, 0);
+                  };
+                  Plotly.newPlot("plot", data, layout);
+                  var px = map.project(e.latlng);
+                  console.log(px)
+                  px.y -= 400;
+                  map.panTo(map.unproject(px), { animate: true });
+                  if (debug) {
+                    $("#plot").on('plotly_hover plotly_click', function (event, data) {
+                      console.log(data)
+                      var d = data.points[0].x;
+                      console.log(`Hovered on ${d}`)
+                      var dt = dates[data.points[0].pointIndex].replace("+00:00", "").replace(/[ :]/g, "-");
+                      var sat = satname[data.points[0].pointIndex]
+                      var plot_url = `https://wave.storm-surge.cloud.edu.au/CoastSat_data/${p.site_id}/jpg_files/detection/${dt}_${sat}.jpg`
+                      console.log(plot_url)
+                      $("#img").attr("src", plot_url);
+                    })
+                  }
+                }
+              });
+            }
             Papa.parse(url, {
               download: true,
               header: true,
@@ -506,6 +565,40 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
 
       legend.addTo(map);
     </script>
+</script>
+  <script>
+    function getURLParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Set the global toggle flag for micropublications
+    window.ENABLE_MICROPUBLICATIONS = getURLParameter("micro") === "true";
+
+    if (window.ENABLE_MICROPUBLICATIONS) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = './micro_integration/glify_micropublication.css';
+      document.head.appendChild(link);
+    }
+  </script>
+  <script src="micro_integration/glify_micropublication.js"></script>
+  <script>
+    const toggle = document.getElementById("microToggle");
+    if (toggle) {
+      toggle.checked = window.ENABLE_MICROPUBLICATIONS;
+
+      toggle.addEventListener("change", function () {
+        const url = new URL(window.location.href);
+        if (this.checked) {
+          url.searchParams.set("micro", "true");
+        } else {
+          url.searchParams.delete("micro");
+        }
+        window.location.href = url.toString();
+      });
+    }
+  </script>
 </body>
 
 </html>

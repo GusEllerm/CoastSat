@@ -23,3 +23,16 @@ On the above mentioned NeCTAR VM, which should, on the 1st of every month:
 - Run tide correction
 - Recalculate the linear trend
 - Commit the new results to this repo
+
+## LivePublication Micropublication Integration
+
+This fork of CoastSat includes an experimental integration with the [LivePublication](https://github.com/UoA-eResearch/LivePublication) framework, allowing each transect popup to procedurally generate a micropublication. This micropublication includes contextual information and a Plotly time-series visualization based on the selected transect’s data.
+
+The micropublication content is modular and conditionally enabled:
+- A global `ENABLE_MICROPUBLICATIONS` flag controls whether micropublications are shown instead of the default popup content.
+- This flag can be toggled using a UI switch included in the sidebar or via a URL query parameter, e.g. `?micro=true`.
+- The integration code is isolated within the `micro_integration/` directory and includes:
+  - `glify_micropublication.js` — handles popup logic for micropublications
+  - `glify_micropublication.css` — styles for the tabbed popup layout
+
+This setup is designed to be safely ignorable by upstream developers and does not interfere with existing functionality when disabled.
