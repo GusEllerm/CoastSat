@@ -1,0 +1,21 @@
+**Example Title**
+
+```python exec
+test = "example_code"
+set = [1, 2, 3]
+print(test)
+```
+
+## Example subsection
+
+1. Example item
+2. Second item
+3. Third item
+
+Example inline variable dereference: `test`{python exec}
+
+::: for item in `set`{python exec}
+
+- {{ item }}
+
+:::

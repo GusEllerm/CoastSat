@@ -1,3 +1,6 @@
+// Set this to your production API endpoint if hosting remotely
+const MICROPUB_API_BASE = 'http://localhost:8765';
+let lastGeneratedFilename = null;
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {
   const container = document.createElement("div");
   container.className = "popup-content";
@@ -5,7 +8,7 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
   const tabs = `
     <div class="tab-buttons">
       <button class="tab-button active" data-tab="tab1">Info</button>
-      <button class="tab-button" data-tab="tab2">Debug</button>
+      <button class="tab-button" data-tab="tab2">MicroPublication</button>
     </div>
     <div id="tab1" class="tab-content active">
       <b>${p.id}</b><br>
@@ -50,13 +53,24 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
         const tabId = button.dataset.tab;
         if (tabId === "tab2") {
           const iframe = document.getElementById('debug-iframe');
-          fetch('../publication/test.html')
-            .then(r => r.text())
-            .then(html => {
-              iframe.srcdoc = html;
+          // iframe.srcdoc = "<p>Generating micropublication...</p>";
+
+          fetch(`${MICROPUB_API_BASE}/request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: p.id })  // Send the ID for publication
+          })
+            .then(r => r.json())
+            .then(data => {
+              const filename = data.filename;
+              console.log("Micropublication response:", data);
+              console.log("Expected iframe.src:", `${MICROPUB_API_BASE}/tmp/${filename}`);
+              iframe.src = `${MICROPUB_API_BASE}/tmp/${filename}`;
+              lastGeneratedFilename = filename;
             })
             .catch(err => {
-              iframe.srcdoc = "<p>Failed to load debug info.</p>";
+              console.error("Failed to load micropublication:", err);
+              iframe.srcdoc = "<p style='color:red;'>Failed to load debug info.</p>";
             });
         }
       });
@@ -114,6 +128,26 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
           container.querySelector("#img").src = plot_url;
         });
       }
+    }
+  });
+
+  map.on('popupclose', function () {
+    // Reset iframe content for cleanup
+    console.log("Popup closed, cleaning up micropublication file...");
+    if (lastGeneratedFilename) {
+      console.log(`🗑️ Cleaning up micropublication file: ${lastGeneratedFilename}`);
+      fetch(`${MICROPUB_API_BASE}/delete/${lastGeneratedFilename}`, {
+        method: 'DELETE'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to delete file");
+        console.log(`🗑️ Deleted ${lastGeneratedFilename}`);
+      })
+      .catch(err => {
+        console.warn("⚠️ Failed to delete micropublication file:", err);
+      });
+
+      lastGeneratedFilename = null;
     }
   });
 };

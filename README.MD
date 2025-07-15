@@ -18,6 +18,7 @@ Additionally, I've configured a cron job:
 ```
 
 On the above mentioned NeCTAR VM, which should, on the 1st of every month:
+
 - Download any new Landsat satellite imagery
 - Run CoastSat to classify these images, find the shorelines, and transect intersects
 - Run tide correction
@@ -29,10 +30,25 @@ On the above mentioned NeCTAR VM, which should, on the 1st of every month:
 This fork of CoastSat includes an experimental integration with the [LivePublication](https://github.com/UoA-eResearch/LivePublication) framework, allowing each transect popup to procedurally generate a micropublication. This micropublication includes contextual information and a Plotly time-series visualization based on the selected transect’s data.
 
 The micropublication content is modular and conditionally enabled:
+
 - A global `ENABLE_MICROPUBLICATIONS` flag controls whether micropublications are shown instead of the default popup content.
 - This flag can be toggled using a UI switch included in the sidebar or via a URL query parameter, e.g. `?micro=true`.
 - The integration code is isolated within the `micro_integration/` directory and includes:
   - `glify_micropublication.js` — handles popup logic for micropublications
   - `glify_micropublication.css` — styles for the tabbed popup layout
 
-This setup is designed to be safely ignorable by upstream developers and does not interfere with existing functionality when disabled.
+### Micropublication Generation
+
+When enabled, micropublications are generated dynamically in response to user interaction. This is handled via a lightweight Python service (`micro_integration/micropub_watcher.py`) that watches for micropublication requests and runs a Stencila pipeline using a procedural narrative template.
+
+- When a user clicks on a transect, a request is posted to the watcher service (`http://localhost:8765/request`) with the transect ID.
+- The watcher generates a unique HTML file from a `.smd` template (`micro_integration/micropub_templates/base_template.smd`) using Stencila, and places the result in `micro_integration/tmp/`.
+- The client receives the filename in the response and embeds it as an iframe inside the popup.
+
+Additional logic in `glify_micropublication.js` includes:
+
+- A preload mechanism that fetches and prepares the micropublication upon transect selection.
+- Cleanup logic to remove previous requests and prevent accumulation of stale files.
+
+Note: The current implementation uses a local-only polling server and assumes the frontend is hosted on `localhost:8000`.
+Note: Caching previously seen micropubs is a good idea, but not yet implemented here.
