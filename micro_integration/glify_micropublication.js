@@ -1,6 +1,7 @@
 // Set this to your production API endpoint if hosting remotely
 const MICROPUB_API_BASE = 'http://localhost:8765';
 let lastGeneratedFilename = null;
+let popupListenerRegistered = false;
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {
   const container = document.createElement("div");
   container.className = "popup-content";
@@ -28,10 +29,9 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
       site: ${p.site_id}<br>
       ${download}
       ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
-      <!-- <div id="plot"></div> -->
     </div>
     <div id="tab2" class="tab-content">
-      <iframe id="debug-iframe" style="width: 100%; border: none;" height="400"></iframe>
+      <iframe id="debug-iframe" style="width: 100%; border: none; display: none;" height="400"></iframe>
     </div>
     <div id="debug-plot"></div>`;
   container.innerHTML = tabs;
@@ -51,27 +51,11 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
           targetContent.classList.add("active");
         }
         const tabId = button.dataset.tab;
+        const iframe = document.getElementById('debug-iframe');
         if (tabId === "tab2") {
-          const iframe = document.getElementById('debug-iframe');
-          // iframe.srcdoc = "<p>Generating micropublication...</p>";
-
-          fetch(`${MICROPUB_API_BASE}/request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: p.id })  // Send the ID for publication
-          })
-            .then(r => r.json())
-            .then(data => {
-              const filename = data.filename;
-              console.log("Micropublication response:", data);
-              console.log("Expected iframe.src:", `${MICROPUB_API_BASE}/tmp/${filename}`);
-              iframe.src = `${MICROPUB_API_BASE}/tmp/${filename}`;
-              lastGeneratedFilename = filename;
-            })
-            .catch(err => {
-              console.error("Failed to load micropublication:", err);
-              iframe.srcdoc = "<p style='color:red;'>Failed to load debug info.</p>";
-            });
+          iframe.style.display = "block";
+        } else {
+          iframe.style.display = "none";
         }
       });
     });
@@ -80,6 +64,47 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
     .setContent(container)
     .setLatLng(e.latlng)
     .addTo(map);
+
+  fetch(`${MICROPUB_API_BASE}/request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: p.id })
+  })
+    .then(r => r.json())
+    .then(data => {
+      const filename = data.filename;
+      console.log("Micropublication response:", data);
+      const thisPopupFilename = filename;
+      lastGeneratedFilename = thisPopupFilename;
+      // Wait until the file exists before attempting to load it
+      const maxAttempts = 10;
+      let attempts = 0;
+      const checkMicropublicationReady = () => {
+        const iframe = document.getElementById('debug-iframe');
+        const url = `${MICROPUB_API_BASE}/tmp/${thisPopupFilename}`;
+        fetch(url, { method: 'HEAD' })
+          .then(res => {
+            if (res.ok) {
+              if (lastGeneratedFilename === thisPopupFilename) {
+                iframe.src = url;
+              }
+            } else if (attempts < maxAttempts) {
+              attempts++;
+              setTimeout(checkMicropublicationReady, 1000);
+            }
+          })
+          .catch(() => {
+            if (attempts < maxAttempts) {
+              attempts++;
+              setTimeout(checkMicropublicationReady, 1000);
+            }
+          });
+      };
+      checkMicropublicationReady();
+    })
+    .catch(err => {
+      console.error("Failed to load micropublication:", err);
+    });
 
   Papa.parse(url, {
     download: true,
@@ -116,38 +141,34 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
         xaxis: { title: "Date/Time" },
         yaxis: { title: "cross-shore change [m]", hoverformat: '.1f' }
       };
+    }
+  });
 
-      Plotly.newPlot(container.querySelector("#plot"), data, layout);
-
-      if (debug) {
-        container.querySelector("#plot").addEventListener('plotly_hover', function (event) {
-          const d = event.detail.points[0].x;
-          const dt = dates[event.detail.points[0].pointIndex].replace("+00:00", "").replace(/[ :]/g, "-");
-          const sat = satname[event.detail.points[0].pointIndex];
-          const plot_url = `https://wave.storm-surge.cloud.edu.au/CoastSat_data/${p.site_id}/jpg_files/detection/${dt}_${sat}.jpg`;
-          container.querySelector("#img").src = plot_url;
+  if (!popupListenerRegistered) {
+    map.on('popupclose', function () {
+      const iframe = document.getElementById('debug-iframe');
+      if (iframe) iframe.src = "";
+      console.log("Popup closed, cleaning up micropublication file...");
+      if (lastGeneratedFilename) {
+        console.log(`🗑️ Cleaning up micropublication file: ${lastGeneratedFilename}`);
+        fetch(`${MICROPUB_API_BASE}/delete/${lastGeneratedFilename}`, {
+          method: 'DELETE'
+        })
+        .then(res => {
+          if (res.status === 404) {
+            console.warn(`⚠️ Tried to delete ${lastGeneratedFilename}, but it didn't exist yet (probably still generating).`);
+          } else if (!res.ok) {
+            throw new Error("Failed to delete file");
+          } else {
+            console.log(`🗑️ Deleted ${lastGeneratedFilename}`);
+          }
+          lastGeneratedFilename = null;
+        })
+        .catch(err => {
+          console.warn("⚠️ Failed to delete micropublication file:", err);
         });
       }
-    }
-  });
-
-  map.on('popupclose', function () {
-    // Reset iframe content for cleanup
-    console.log("Popup closed, cleaning up micropublication file...");
-    if (lastGeneratedFilename) {
-      console.log(`🗑️ Cleaning up micropublication file: ${lastGeneratedFilename}`);
-      fetch(`${MICROPUB_API_BASE}/delete/${lastGeneratedFilename}`, {
-        method: 'DELETE'
-      })
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to delete file");
-        console.log(`🗑️ Deleted ${lastGeneratedFilename}`);
-      })
-      .catch(err => {
-        console.warn("⚠️ Failed to delete micropublication file:", err);
-      });
-
-      lastGeneratedFilename = null;
-    }
-  });
+    });
+    popupListenerRegistered = true;
+  }
 };
