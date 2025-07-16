@@ -1,0 +1,567 @@
+
+
+<html>
+<head>
+
+
+<script type="application/ld+json"> 
+  {
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "creator": {
+        "@id": "#creator"
+      },
+      "datePublished": "2025-07-16T04:39:46+00:00",
+      "description": "This crate contains the interface.crate and a Stencila DNF document for generating micropublications.",
+      "hasPart": [
+        {
+          "@id": "micropublication.smd"
+        },
+        {
+          "@id": "interface.crate/"
+        },
+        {
+          "@id": "micropublication_logic.py"
+        }
+      ],
+      "mainEntity": {
+        "@id": "#research-article"
+      },
+      "name": "Micropublication Crate",
+      "@reverse": {
+        "about": [
+          {
+            "@id": "ro-crate-metadata.json"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "#creator",
+      "@type": "Person",
+      "name": "Unknown Author",
+      "@reverse": {
+        "creator": [
+          {
+            "@id": "./"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "micropublication.smd",
+      "@type": [
+        "File",
+        "SoftwareSourceCode",
+        "SoftwareApplication"
+      ],
+      "conformsTo": {
+        "@id": "#stencila-schema"
+      },
+      "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
+      "encodingFormat": "application/smd",
+      "name": "DNF Document File",
+      "sha256": "9689d0d34f350a88e1852819b71ed114f71aecf6c4ee559ca5656f8500701e9e",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "isBasedOn": [
+          {
+            "@id": "#dnf-evaluated-document"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#stencila",
+      "@type": "SoftwareApplication",
+      "description": "The DNF Engine used to resolve the dynamic narrative.",
+      "howToUse": "https://github.com/stencila/stencila/blob/main/docs/reference/cli.md",
+      "isBasedOn": [
+        {
+          "@id": "#stencila-schema"
+        }
+      ],
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "name": "Stencila",
+      "operatingSystem": "all",
+      "softwareVersion": "stencila 2.4.1",
+      "url": "https://github.com/stencila/stencila",
+      "@reverse": {
+        "isBasedOn": [
+          {
+            "@id": "#dnf-evaluated-document"
+          },
+          {
+            "@id": "#dnf-presentation-environment"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#stencila-schema",
+      "@type": "CreativeWork",
+      "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "name": "Stencila DNF Engine Specification",
+      "url": "https://github.com/stencila/stencila/tree/v2.4.1/schema",
+      "@reverse": {
+        "conformsTo": [
+          {
+            "@id": "micropublication.smd"
+          }
+        ],
+        "isBasedOn": [
+          {
+            "@id": "#stencila"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "interface.crate/",
+      "@type": [
+        "RO-Crate",
+        "Dataset"
+      ],
+      "description": "Nested interface.crate containing Experiment Infrastructure execution data.",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "name": "Interface Crate",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "isBasedOn": [
+          {
+            "@id": "#dnf-evaluated-document"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#dnf-evaluated-document",
+      "@type": [
+        "CreativeWork",
+        "SoftwareSourceCode"
+      ],
+      "description": "Headless publicatoion.crate; does not contain evaluated DNF document",
+      "isBasedOn": [
+        {
+          "@id": "micropublication.smd"
+        },
+        {
+          "@id": "interface.crate/"
+        },
+        {
+          "@id": "#stencila"
+        }
+      ],
+      "name": "Evaluated DNF Document",
+      "@reverse": {
+        "isBasedOn": [
+          {
+            "@id": "#research-article"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#dnf-presentation-environment",
+      "@type": "CreativeWork",
+      "description": "Environment responsible for converting the evaluated DNF document into presentation formats.",
+      "isBasedOn": [
+        {
+          "@id": "#stencila"
+        }
+      ],
+      "name": "DNF Presentation Environment",
+      "@reverse": {
+        "isBasedOn": [
+          {
+            "@id": "#research-article"
+          }
+        ],
+        "wasGeneratedBy": [
+          {
+            "@id": "#research-article"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#research-article",
+      "@type": "ScholarlyArticle",
+      "description": "Headless publication.crate; does not contain a main article",
+      "isBasedOn": [
+        {
+          "@id": "#dnf-evaluated-document"
+        },
+        {
+          "@id": "#dnf-presentation-environment"
+        }
+      ],
+      "name": "LivePublication: A Dynamic and Reproducible Research Article",
+      "wasGeneratedBy": [
+        {
+          "@id": "#dnf-presentation-environment"
+        },
+        {
+          "@id": "micropublication_logic.py"
+        }
+      ],
+      "@reverse": {
+        "mainEntity": [
+          {
+            "@id": "./"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "micropublication_logic.py",
+      "@type": [
+        "File",
+        "SoftwareSourceCode"
+      ],
+      "description": "Python logic for generating micropublications from the DNF document.",
+      "encodingFormat": "text/x-python",
+      "name": "Micropublication Logic",
+      "sha256": "1f5858a76081d92f2e6342a63f7391d575eca4e01c6a1399329b6d6db8aaad41",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "wasGeneratedBy": [
+          {
+            "@id": "#research-article"
+          }
+        ]
+      }
+    }
+  ]
+}
+</script>
+
+    
+<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script -->
+<script src="https://unpkg.com/ro-crate-html-js/dist/ro-crate-dynamic.js"></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<meta charset='utf-8'/>
+<style>
+
+table.table {
+  padding-bottom: 300px;
+}
+</style>
+</head>
+
+
+<body>
+
+  <nav class="navbar">
+
+    <ul class="nav navbar-nav" >
+        <li ><a href="#"><span class="glyphicon glyphicon-home dataset_name">&nbsp;Micropublication Crate</span></a></li>
+    </ul>
+
+  </nav>
+<div class="container">
+<div class="jumbotron">
+<h4 class="citation"></h3>
+<h3 class="item_name">Micropublication Crate</h4>
+
+
+<a href="./ro-crate-metadata.json">⬇️🏷️ Download all the metadata for <span class='name'>Micropublication Crate</span> in JSON-LD format</a>
+
+
+<div id="check"></div>
+
+
+</div>
+
+
+
+<div id="summary">
+<div class='all-meta'>
+           <div>
+            <h3> Micropublication Crate</h3>
+            
+            
+            
+            
+        <div id="./">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>./</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Micropublication Crate</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><span>Dataset</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>This crate contains the interface.crate and a Stencila DNF document for generating micropublications.</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">datePublished<span>&nbsp;</span><a href="http://schema.org/datePublished">[?]</a></th>
+            <td style='text-align:left'><span>2025-07-16T04:39:46+00:00</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">creator<span>&nbsp;</span><a href="http://schema.org/creator">[?]</a></th>
+            <td style='text-align:left'><a href="#%23creator">Unknown Author</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#micropublication.smd">DNF Document File</a></li>
+                        
+                        <li><a href="#interface.crate/">Interface Crate</a></li>
+                        
+                        <li><a href="#micropublication_logic.py">Micropublication Logic</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">mainEntity<span>&nbsp;</span><a href="http://schema.org/mainEntity">[?]</a></th>
+            <td style='text-align:left'><a href="#%23research-article">LivePublication: A Dynamic and Reproducible Research Article</a></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">about<span>&nbsp;</span><a href="http://schema.org/about">[?]</a></th>
+            <td style='text-align:left'><a href="#ro-crate-metadata.json">ro-crate-metadata.json</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3> Unknown Author</h3>
+            
+            
+            
+            
+        <div id="#creator">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>#creator</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Unknown Author</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><span>Person</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">creator<span>&nbsp;</span><a href="http://schema.org/creator">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Micropublication Crate</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="micropublication.smd">⬇️ Download: </a> DNF Document File</h3>
+            
+            
+            
+            
+        <div id="micropublication.smd">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>micropublication.smd</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>DNF Document File</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>File</span></li>
+                        
+                        <li><span>SoftwareSourceCode</span></li>
+                        
+                        <li><span>SoftwareApplication</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>The unresolved dynamic narrative document serving as input to the DNF Engine.</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">encodingFormat<span>&nbsp;</span><a href="http://schema.org/encodingFormat">[?]</a></th>
+            <td style='text-align:left'><span>application/smd</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">conformsTo<span>&nbsp;</span><a href="http://purl.org/dc/terms/conformsTo">[?]</a></th>
+            <td style='text-align:left'><a href="#%23stencila-schema">Stencila DNF Engine Specification</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>9689d0d34f350a88e1852819b71ed114f71aecf6c4ee559ca5656f8500701e9e</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Micropublication Crate</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">isBasedOn<span>&nbsp;</span><a href="http://schema.org/isBasedOn">[?]</a></th>
+            <td style='text-align:left'><a href="#%23dnf-evaluated-document">Evaluated DNF Document</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3> Interface Crate</h3>
+            
+            
+            
+            
+        <div id="interface.crate/">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>interface.crate/</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Interface Crate</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>RO-Crate</span></li>
+                        
+                        <li><span>Dataset</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>Nested interface.crate containing Experiment Infrastructure execution data.</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">license<span>&nbsp;</span><a href="http://schema.org/license">[?]</a></th>
+            <td style='text-align:left'><a href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Micropublication Crate</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">isBasedOn<span>&nbsp;</span><a href="http://schema.org/isBasedOn">[?]</a></th>
+            <td style='text-align:left'><a href="#%23dnf-evaluated-document">Evaluated DNF Document</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="micropublication_logic.py">⬇️ Download: </a> Micropublication Logic</h3>
+            
+            
+            
+            
+        <div id="micropublication_logic.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>micropublication_logic.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Micropublication Logic</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>File</span></li>
+                        
+                        <li><span>SoftwareSourceCode</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>Python logic for generating micropublications from the DNF document.</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">encodingFormat<span>&nbsp;</span><a href="http://schema.org/encodingFormat">[?]</a></th>
+            <td style='text-align:left'><span>text/x-python</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>1f5858a76081d92f2e6342a63f7391d575eca4e01c6a1399329b6d6db8aaad41</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Micropublication Crate</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">wasGeneratedBy</th>
+            <td style='text-align:left'><a href="#%23research-article">LivePublication: A Dynamic and Reproducible Research Article</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3> LivePublication: A Dynamic and Reproducible Research Article</h3>
+            
+            
+            
+            
+        <div id="#research-article">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>#research-article</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>LivePublication: A Dynamic and Reproducible Research Article</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><span>ScholarlyArticle</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>Headless publication.crate; does not contain a main article</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">isBasedOn<span>&nbsp;</span><a href="http://schema.org/isBasedOn">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#%23dnf-evaluated-document">Evaluated DNF Document</a></li>
+                        
+                        <li><a href="#%23dnf-presentation-environment">DNF Presentation Environment</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">wasGeneratedBy</th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#%23dnf-presentation-environment">DNF Presentation Environment</a></li>
+                        
+                        <li><a href="#micropublication_logic.py">Micropublication Logic</a></li>
+                        </ul></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">mainEntity<span>&nbsp;</span><a href="http://schema.org/mainEntity">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Micropublication Crate</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/></div>
+</div>
+
+
+
+
+
+</body>
+</html>

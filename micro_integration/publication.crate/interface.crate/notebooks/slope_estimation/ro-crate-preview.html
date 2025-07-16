@@ -1,0 +1,811 @@
+
+
+<html>
+<head>
+
+
+<script type="application/ld+json"> 
+  {
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "datePublished": "2025-07-14T00:54:20+00:00",
+      "hasPart": [
+        {
+          "@id": "slope_estimation.ipynb"
+        },
+        {
+          "@id": "code_blocks/cell_1.py"
+        },
+        {
+          "@id": "code_blocks/cell_2.py"
+        },
+        {
+          "@id": "code_blocks/cell_3.py"
+        },
+        {
+          "@id": "code_blocks/cell_4.py"
+        }
+      ],
+      "mainEntity": {
+        "@id": "slope_estimation.ipynb"
+      },
+      "name": "Notebook Provenance Crate (slope_estimation.ipynb)",
+      "@reverse": {
+        "about": [
+          {
+            "@id": "ro-crate-metadata.json"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "slope_estimation.ipynb",
+      "@type": [
+        "File",
+        "SoftwareSourceCode",
+        "HowTo"
+      ],
+      "input": [
+        {
+          "@id": "#fp-tides_csv"
+        },
+        {
+          "@id": "#fp-transect_time_series_csv"
+        },
+        {
+          "@id": "#fp-transects_extended_geojson"
+        }
+      ],
+      "output": [
+        {
+          "@id": "#fp-transects_extended_geojson"
+        }
+      ],
+      "step": [
+        {
+          "@id": "#step-1"
+        },
+        {
+          "@id": "#step-2"
+        },
+        {
+          "@id": "#step-3"
+        },
+        {
+          "@id": "#step-4"
+        }
+      ],
+      "targetProduct": {
+        "@id": "#jupyter-kernel"
+      },
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "mainEntity": [
+          {
+            "@id": "./"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#jupyter-kernel",
+      "@type": "SoftwareApplication",
+      "description": "Jupyter Notebook kernel for Python 3",
+      "identifier": "python3",
+      "name": "Jupyter Notebook Kernel",
+      "programmingLanguage": "python3",
+      "softwareVersion": "3.12.3",
+      "version": "3.12.3",
+      "@reverse": {
+        "targetProduct": [
+          {
+            "@id": "slope_estimation.ipynb"
+          }
+        ],
+        "tool": [
+          {
+            "@id": "#step-1"
+          },
+          {
+            "@id": "#step-2"
+          },
+          {
+            "@id": "#step-3"
+          },
+          {
+            "@id": "#step-4"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#step-1",
+      "@type": "HowToStep",
+      "about": {
+        "@id": "#create-action-1"
+      },
+      "name": "Code cell 1",
+      "position": 1,
+      "tool": {
+        "@id": "#jupyter-kernel"
+      },
+      "workExample": {
+        "@id": "code_blocks/cell_1.py"
+      },
+      "@reverse": {
+        "step": [
+          {
+            "@id": "slope_estimation.ipynb"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#step-2",
+      "@type": "HowToStep",
+      "about": {
+        "@id": "#create-action-2"
+      },
+      "name": "Code cell 2",
+      "position": 2,
+      "tool": {
+        "@id": "#jupyter-kernel"
+      },
+      "workExample": {
+        "@id": "code_blocks/cell_2.py"
+      },
+      "@reverse": {
+        "step": [
+          {
+            "@id": "slope_estimation.ipynb"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#step-3",
+      "@type": "HowToStep",
+      "about": {
+        "@id": "#create-action-3"
+      },
+      "name": "Code cell 3",
+      "position": 3,
+      "tool": {
+        "@id": "#jupyter-kernel"
+      },
+      "workExample": {
+        "@id": "code_blocks/cell_3.py"
+      },
+      "@reverse": {
+        "step": [
+          {
+            "@id": "slope_estimation.ipynb"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#step-4",
+      "@type": "HowToStep",
+      "about": {
+        "@id": "#create-action-4"
+      },
+      "name": "Code cell 4",
+      "position": 4,
+      "tool": {
+        "@id": "#jupyter-kernel"
+      },
+      "workExample": {
+        "@id": "code_blocks/cell_4.py"
+      },
+      "@reverse": {
+        "step": [
+          {
+            "@id": "slope_estimation.ipynb"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#fp-tides_csv",
+      "@type": "FormalParameter",
+      "name": "tides.csv",
+      "@reverse": {
+        "input": [
+          {
+            "@id": "slope_estimation.ipynb"
+          },
+          {
+            "@id": "code_blocks/cell_4.py"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#fp-transect_time_series_csv",
+      "@type": "FormalParameter",
+      "name": "transect_time_series.csv",
+      "@reverse": {
+        "input": [
+          {
+            "@id": "slope_estimation.ipynb"
+          },
+          {
+            "@id": "code_blocks/cell_4.py"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#fp-transects_extended_geojson",
+      "@type": "FormalParameter",
+      "name": "transects_extended.geojson",
+      "@reverse": {
+        "input": [
+          {
+            "@id": "slope_estimation.ipynb"
+          },
+          {
+            "@id": "code_blocks/cell_2.py"
+          }
+        ],
+        "output": [
+          {
+            "@id": "slope_estimation.ipynb"
+          },
+          {
+            "@id": "code_blocks/cell_4.py"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "code_blocks/cell_1.py",
+      "@type": [
+        "SoftwareApplication",
+        "File"
+      ],
+      "input": [],
+      "name": "Code Cell 1",
+      "output": [],
+      "sha256": "44b7d1379c903d0936a08ceb400faf9bcb60a2a0b0651b8be6ca22a2d8652f4c",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "workExample": [
+          {
+            "@id": "#step-1"
+          }
+        ],
+        "instrument": [
+          {
+            "@id": "#create-action-1"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "code_blocks/cell_2.py",
+      "@type": [
+        "SoftwareApplication",
+        "File"
+      ],
+      "input": [
+        {
+          "@id": "#fp-transects_extended_geojson"
+        }
+      ],
+      "name": "Code Cell 2",
+      "output": [],
+      "sha256": "1a1d222d91a7575d75929e0ad2cbeee5e935b7395764195949db9deaa94e500a",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "workExample": [
+          {
+            "@id": "#step-2"
+          }
+        ],
+        "instrument": [
+          {
+            "@id": "#create-action-2"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "code_blocks/cell_3.py",
+      "@type": [
+        "SoftwareApplication",
+        "File"
+      ],
+      "input": [],
+      "name": "Code Cell 3",
+      "output": [],
+      "sha256": "e70519a3fc41e01f2e3d0d0840d30bd958d64a4421e2290667bda0d9605e29d8",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "workExample": [
+          {
+            "@id": "#step-3"
+          }
+        ],
+        "instrument": [
+          {
+            "@id": "#create-action-3"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "code_blocks/cell_4.py",
+      "@type": [
+        "SoftwareApplication",
+        "File"
+      ],
+      "input": [
+        {
+          "@id": "#fp-tides_csv"
+        },
+        {
+          "@id": "#fp-transect_time_series_csv"
+        }
+      ],
+      "name": "Code Cell 4",
+      "output": [
+        {
+          "@id": "#fp-transects_extended_geojson"
+        }
+      ],
+      "sha256": "1e649dd031ffb2e5ec75d5411fa895d5eb4af22a8ccfdce9b62529df1a0d223f",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
+          }
+        ],
+        "workExample": [
+          {
+            "@id": "#step-4"
+          }
+        ],
+        "instrument": [
+          {
+            "@id": "#create-action-4"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#create-action-1",
+      "@type": "CreateAction",
+      "instrument": {
+        "@id": "code_blocks/cell_1.py"
+      },
+      "@reverse": {
+        "about": [
+          {
+            "@id": "#step-1"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#create-action-2",
+      "@type": "CreateAction",
+      "instrument": {
+        "@id": "code_blocks/cell_2.py"
+      },
+      "@reverse": {
+        "about": [
+          {
+            "@id": "#step-2"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#create-action-3",
+      "@type": "CreateAction",
+      "instrument": {
+        "@id": "code_blocks/cell_3.py"
+      },
+      "@reverse": {
+        "about": [
+          {
+            "@id": "#step-3"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "#create-action-4",
+      "@type": "CreateAction",
+      "instrument": {
+        "@id": "code_blocks/cell_4.py"
+      },
+      "@reverse": {
+        "about": [
+          {
+            "@id": "#step-4"
+          }
+        ]
+      }
+    }
+  ]
+}
+</script>
+
+    
+<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script -->
+<script src="https://unpkg.com/ro-crate-html-js/dist/ro-crate-dynamic.js"></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<meta charset='utf-8'/>
+<style>
+
+table.table {
+  padding-bottom: 300px;
+}
+</style>
+</head>
+
+
+<body>
+
+  <nav class="navbar">
+
+    <ul class="nav navbar-nav" >
+        <li ><a href="#"><span class="glyphicon glyphicon-home dataset_name">&nbsp;Notebook Provenance Crate (slope_estimation.ipynb)</span></a></li>
+    </ul>
+
+  </nav>
+<div class="container">
+<div class="jumbotron">
+<h4 class="citation"></h3>
+<h3 class="item_name">Notebook Provenance Crate (slope_estimation.ipynb)</h4>
+
+
+<a href="./ro-crate-metadata.json">⬇️🏷️ Download all the metadata for <span class='name'>Notebook Provenance Crate (slope_estimation.ipynb)</span> in JSON-LD format</a>
+
+
+<div id="check"></div>
+
+
+</div>
+
+
+
+<div id="summary">
+<div class='all-meta'>
+           <div>
+            <h3> Notebook Provenance Crate (slope_estimation.ipynb)</h3>
+            
+            
+            
+            
+        <div id="./">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>./</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Notebook Provenance Crate (slope_estimation.ipynb)</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><span>Dataset</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">datePublished<span>&nbsp;</span><a href="http://schema.org/datePublished">[?]</a></th>
+            <td style='text-align:left'><span>2025-07-14T00:54:20+00:00</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#slope_estimation.ipynb">slope_estimation.ipynb</a></li>
+                        
+                        <li><a href="#code_blocks/cell_1.py">Code Cell 1</a></li>
+                        
+                        <li><a href="#code_blocks/cell_2.py">Code Cell 2</a></li>
+                        
+                        <li><a href="#code_blocks/cell_3.py">Code Cell 3</a></li>
+                        
+                        <li><a href="#code_blocks/cell_4.py">Code Cell 4</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">mainEntity<span>&nbsp;</span><a href="http://schema.org/mainEntity">[?]</a></th>
+            <td style='text-align:left'><a href="#slope_estimation.ipynb">slope_estimation.ipynb</a></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">about<span>&nbsp;</span><a href="http://schema.org/about">[?]</a></th>
+            <td style='text-align:left'><a href="#ro-crate-metadata.json">ro-crate-metadata.json</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="slope_estimation.ipynb">⬇️ Download: </a> slope_estimation.ipynb</h3>
+            
+            
+            
+            
+        <div id="slope_estimation.ipynb">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>slope_estimation.ipynb</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>File</span></li>
+                        
+                        <li><span>SoftwareSourceCode</span></li>
+                        
+                        <li><span>HowTo</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">input<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#input">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#%23fp-tides_csv">tides.csv</a></li>
+                        
+                        <li><a href="#%23fp-transect_time_series_csv">transect_time_series.csv</a></li>
+                        
+                        <li><a href="#%23fp-transects_extended_geojson">transects_extended.geojson</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">output<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#output">[?]</a></th>
+            <td style='text-align:left'><a href="#%23fp-transects_extended_geojson">transects_extended.geojson</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">step<span>&nbsp;</span><a href="http://schema.org/step">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#%23step-1">Code cell 1</a></li>
+                        
+                        <li><a href="#%23step-2">Code cell 2</a></li>
+                        
+                        <li><a href="#%23step-3">Code cell 3</a></li>
+                        
+                        <li><a href="#%23step-4">Code cell 4</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">targetProduct<span>&nbsp;</span><a href="http://schema.org/targetProduct">[?]</a></th>
+            <td style='text-align:left'><a href="#%23jupyter-kernel">Jupyter Notebook Kernel</a></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">mainEntity<span>&nbsp;</span><a href="http://schema.org/mainEntity">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="code_blocks/cell_1.py">⬇️ Download: </a> Code Cell 1</h3>
+            
+            
+            
+            
+        <div id="code_blocks/cell_1.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>code_blocks/cell_1.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Code Cell 1</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>SoftwareApplication</span></li>
+                        
+                        <li><span>File</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">input<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#input">[?]</a></th>
+            <td style='text-align:left'></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">output<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#output">[?]</a></th>
+            <td style='text-align:left'></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>44b7d1379c903d0936a08ceb400faf9bcb60a2a0b0651b8be6ca22a2d8652f4c</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">workExample<span>&nbsp;</span><a href="http://schema.org/workExample">[?]</a></th>
+            <td style='text-align:left'><a href="#%23step-1">Code cell 1</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">instrument<span>&nbsp;</span><a href="http://schema.org/instrument">[?]</a></th>
+            <td style='text-align:left'><a href="#%23create-action-1">#create-action-1</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="code_blocks/cell_2.py">⬇️ Download: </a> Code Cell 2</h3>
+            
+            
+            
+            
+        <div id="code_blocks/cell_2.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>code_blocks/cell_2.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Code Cell 2</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>SoftwareApplication</span></li>
+                        
+                        <li><span>File</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">input<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#input">[?]</a></th>
+            <td style='text-align:left'><a href="#%23fp-transects_extended_geojson">transects_extended.geojson</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">output<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#output">[?]</a></th>
+            <td style='text-align:left'></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>1a1d222d91a7575d75929e0ad2cbeee5e935b7395764195949db9deaa94e500a</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">workExample<span>&nbsp;</span><a href="http://schema.org/workExample">[?]</a></th>
+            <td style='text-align:left'><a href="#%23step-2">Code cell 2</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">instrument<span>&nbsp;</span><a href="http://schema.org/instrument">[?]</a></th>
+            <td style='text-align:left'><a href="#%23create-action-2">#create-action-2</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="code_blocks/cell_3.py">⬇️ Download: </a> Code Cell 3</h3>
+            
+            
+            
+            
+        <div id="code_blocks/cell_3.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>code_blocks/cell_3.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Code Cell 3</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>SoftwareApplication</span></li>
+                        
+                        <li><span>File</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">input<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#input">[?]</a></th>
+            <td style='text-align:left'></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">output<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#output">[?]</a></th>
+            <td style='text-align:left'></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>e70519a3fc41e01f2e3d0d0840d30bd958d64a4421e2290667bda0d9605e29d8</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">workExample<span>&nbsp;</span><a href="http://schema.org/workExample">[?]</a></th>
+            <td style='text-align:left'><a href="#%23step-3">Code cell 3</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">instrument<span>&nbsp;</span><a href="http://schema.org/instrument">[?]</a></th>
+            <td style='text-align:left'><a href="#%23create-action-3">#create-action-3</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="code_blocks/cell_4.py">⬇️ Download: </a> Code Cell 4</h3>
+            
+            
+            
+            
+        <div id="code_blocks/cell_4.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>code_blocks/cell_4.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Code Cell 4</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>SoftwareApplication</span></li>
+                        
+                        <li><span>File</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">input<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#input">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><a href="#%23fp-tides_csv">tides.csv</a></li>
+                        
+                        <li><a href="#%23fp-transect_time_series_csv">transect_time_series.csv</a></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">output<span>&nbsp;</span><a href="https://bioschemas.org/ComputationalWorkflow#output">[?]</a></th>
+            <td style='text-align:left'><a href="#%23fp-transects_extended_geojson">transects_extended.geojson</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>1e649dd031ffb2e5ec75d5411fa895d5eb4af22a8ccfdce9b62529df1a0d223f</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Notebook Provenance Crate (slope_estimation.ipynb)</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">workExample<span>&nbsp;</span><a href="http://schema.org/workExample">[?]</a></th>
+            <td style='text-align:left'><a href="#%23step-4">Code cell 4</a></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">instrument<span>&nbsp;</span><a href="http://schema.org/instrument">[?]</a></th>
+            <td style='text-align:left'><a href="#%23create-action-4">#create-action-4</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/></div>
+</div>
+
+
+
+
+
+</body>
+</html>

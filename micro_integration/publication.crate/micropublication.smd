@@ -1,0 +1,49 @@
+```{python exec}
+# This code makes the micropublication aware of its interface data.
+from dataclasses import dataclass
+from typing import Optional
+from pathlib import Path
+import pandas as pd
+
+import os
+
+# Load the interface data
+data_path = os.path.join(Path.cwd(), "data.json")
+df = pd.read_json(data_path, typ='series')
+@dataclass
+class SiteData:
+  id: str
+  site_id: str
+  orientation: float
+  along_dist: float
+  along_dist_norm: float
+  beach_slope: float
+  cil: float
+  ciu: float
+  trend: float
+  n_points: float
+  n_points_nonan: float
+  r2_score: float
+  mae: float
+  mse: float
+  rmse: float
+  intercept: float
+  ERODIBILITY: Optional[float]
+
+# Convert the DataFrame row to a SiteData object
+site_data = SiteData(**df.to_dict())
+```
+
+**`site_data.id`{python exec}**
+
+- `site_data.id`{python exec} is the unique identifier for the site.
+- `site_data.site_id`{python exec} is the identifier for the site in the context of the micropublication.
+- `site_data.orientation`{python exec} is the orientation of the site in degrees.
+- `site_data.along_dist`{python exec} is the alongshore distance from a reference point.
+- `site_data.along_dist_norm`{python exec} is the normalized alongshore distance.
+- `site_data.beach_slope`{python exec} is the slope of the beach.
+- `site_data.cil`{python exec} is the lower confidence interval for the trend.
+- `site_data.ciu`{python exec} is the upper confidence interval for the trend.
+- `site_data.trend`{python exec} is the trend value for the site.
+- `site_data.n_points`{python exec} is the total number of points used in the analysis.
+- `site_data.n_points_nonan`{python exec} is the number of points used in the analysis that
