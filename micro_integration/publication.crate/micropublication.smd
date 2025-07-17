@@ -3,11 +3,13 @@
 from dataclasses import dataclass
 from typing import Optional
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
+import requests
+import json
 import os
 
-# Load the interface data
+# Load the transect data
 data_path = os.path.join(Path.cwd(), "data.json")
 df = pd.read_json(data_path, typ='series')
 @dataclass
@@ -30,11 +32,58 @@ class SiteData:
   intercept: float
   ERODIBILITY: Optional[float]
 
-# Convert the DataFrame row to a SiteData object
 site_data = SiteData(**df.to_dict())
-```
 
-**`site_data.id`{python exec}**
+# Load the coordinate data 
+coordinates_path = os.path.join(Path.cwd(), "coordinates.json")
+lon, lat = pd.read_json(coordinates_path, typ='series').to_dict()['coordinates'][0]
+# Reverse geocode coords to get location name
+location = requests.get(
+    url="https://nominatim.openstreetmap.org/reverse",
+    params={
+        'lat': lat,
+        'lon': lon,
+        'format': 'json',
+        'zoom': 10,
+        'addressdetails': 1
+    },
+    headers={'User-Agent': 'CoastSat-Micropublication'}
+).json().get('display_name')
+
+# Load the publication.crate RO-Crate metadata
+crate_metadata_path = Path.cwd() / "interface.crate" / "ro-crate-metadata.json"
+if crate_metadata_path.exists():
+    with open(crate_metadata_path, "r", encoding="utf-8") as f:
+        crate_metadata = json.load(f)
+else:
+    crate_metadata = {}
+
+# Get the result file entity based on the formal parameter
+formal_param = "#fp-transects_extended_geojson"
+
+def match_example_of_work(entity, formal_param):
+    eow = entity.get("exampleOfWork")
+    if isinstance(eow, list):
+        return any(isinstance(ref, dict) and ref.get("@id") == formal_param for ref in eow)
+    elif isinstance(eow, dict):
+        return eow.get("@id") == formal_param
+    elif isinstance(eow, str):
+        return eow == formal_param
+    return False
+
+result_file = next(
+    (e for e in crate_metadata.get("@graph", []) if match_example_of_work(e, formal_param)),
+    None
+)
+
+if "nzd" in site_data.id or "sar" in site_data.id:
+    is_nz_sar = True
+else:
+    is_nz_sar = False
+
+```
+### `location`{python exec}
+#### `site_data.id`{python exec}
 
 - `site_data.id`{python exec} is the unique identifier for the site.
 - `site_data.site_id`{python exec} is the identifier for the site in the context of the micropublication.
@@ -47,3 +96,20 @@ site_data = SiteData(**df.to_dict())
 - `site_data.trend`{python exec} is the trend value for the site.
 - `site_data.n_points`{python exec} is the total number of points used in the analysis.
 - `site_data.n_points_nonan`{python exec} is the number of points used in the analysis that
+
+**Results Production**
+
+This transect data can be found `dict(type="Link", target=f"{result_file["@id"]}", content=[dict(type="Text", value=f"here")])`{python exec}.
+
+::: if "nzd" in site_data.id or "sar" in site_data.id
+
+The results shown for this transect are based on pre processed data form coastSat. 
+
+::: else
+
+The results shown for this transect are based on an external dataset -- PacificRim Data. 
+
+:::
+
+`lon`{python exec} and `lat`{python exec} are the coordinates of the site.
+
