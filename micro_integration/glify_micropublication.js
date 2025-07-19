@@ -1,5 +1,7 @@
-// Set this to your production API endpoint if hosting remotely
-const MICROPUB_API_BASE = 'http://localhost:8765';
+// Dynamically select API endpoint based on hostname
+const MICROPUB_API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? 'http://localhost:8765'
+  : 'http://130.216.216.92/api';
 let lastGeneratedFilename = null;
 let popupListenerRegistered = false;
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {

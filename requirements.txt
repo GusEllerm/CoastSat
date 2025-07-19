@@ -7,3 +7,4 @@ python-dotenv
 watchdog
 flask
 flask_cors
+rocrate

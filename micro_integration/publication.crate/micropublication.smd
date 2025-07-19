@@ -1,10 +1,11 @@
-```{python exec}
+```python exec
 # This code makes the micropublication aware of its interface data.
 from dataclasses import dataclass
 from typing import Optional
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import requests
 import json
 import os
@@ -12,27 +13,43 @@ import os
 # Load the transect data
 data_path = os.path.join(Path.cwd(), "data.json")
 df = pd.read_json(data_path, typ='series')
+
+def round_if_number(val):
+    if isinstance(val, (float, int)):
+        return round(val, 2)
+    return val
+
 @dataclass
 class SiteData:
-  id: str
-  site_id: str
-  orientation: float
-  along_dist: float
-  along_dist_norm: float
-  beach_slope: float
-  cil: float
-  ciu: float
-  trend: float
-  n_points: float
-  n_points_nonan: float
-  r2_score: float
-  mae: float
-  mse: float
-  rmse: float
-  intercept: float
-  ERODIBILITY: Optional[float]
+    id: str
+    site_id: str
+    orientation: float
+    along_dist: float
+    along_dist_norm: float
+    beach_slope: float
+    cil: float
+    ciu: float
+    trend: float
+    n_points: float
+    n_points_nonan: float
+    r2_score: float
+    mae: float
+    mse: float
+    rmse: float
+    intercept: float
+    ERODIBILITY: Optional[float]
 
-site_data = SiteData(**df.to_dict())
+site_data = SiteData(**{k: round_if_number(v) for k, v in df.to_dict().items()})
+
+# Configuration Variables
+min_points_for_valid_regression = 10 # Minimum number of non-NaN points for the linear regression to be considered plausible
+trend_threshold = 0.01 # Threshold for trend value to be considered significant -- i.e. is the slope big enough to care about. 
+# Look into using the standard deviation of the trend values to set a noise threshold
+noise_threshold = float(round(2 * abs(site_data.trend) * np.sqrt(site_data.n_points_nonan), 3)) # Even if the trend is big enough, is the signal drowned by noise?
+weak_trend_threshold = 0.05 # Trends less than this are considered weak
+strong_trend_threshold = 0.2 # Trends greater than this are considered strong
+
+show_trend = False # We only show the trend if it is interpreted as valid 
 
 # Load the coordinate data 
 coordinates_path = os.path.join(Path.cwd(), "coordinates.json")
@@ -82,11 +99,100 @@ else:
     is_nz_sar = False
 
 ```
-### `location`{python exec}
-#### `site_data.id`{python exec}
+# `location`{python exec}
 
-- `site_data.id`{python exec} is the unique identifier for the site.
-- `site_data.site_id`{python exec} is the identifier for the site in the context of the micropublication.
+::: if site_data.n_points_nonan < min_points_for_valid_regression
+
+The trend fit is not valid due to insufficient data points. The number of non-NaN points used in the analysis is `site_data.n_points_nonan`{python exec}, which is below the minimum required of {min_points_for_valid_regression}.
+
+::: elif site_data.r2_score < 0
+
+The regression line fits worse than a flat model; this is likely due to a lack of data or a poor fit to the data. The R² score is `site_data.r2_score`{python exec}, which indicates that the model does not explain the variability in the data well.
+
+::: elif (abs(site_data.trend) < trend_threshold) 
+
+The trend fit is not valid due to a trend value of `site_data.trend`{python exec} m/year, which is below the threshold of {trend_threshold} m/year.
+
+```python exec
+show_trend = True
+```
+
+::: elif (site_data.r2_score < 0.3)
+
+The regression line fits the data only moderately well, with an R² score of `site_data.r2_score`{python exec}. This suggests that the model explains some variability in the data, but the fit is not strong.
+
+```python exec
+show_trend = True
+```
+
+::: elif (site_data.rmse > noise_threshold)
+
+The trend fit is not valid because the root mean square error (RMSE) of `site_data.rmse`{python exec} is higher than the noise threshold of `noise_threshold`{python exec}, indicating that the variability in the data is high enough for the trend to be considered unreliable.
+
+```python exec
+show_trend = True
+```
+
+::: elif site_data.r2_score < 0.8 
+
+The trend fit is valid with a high R² score of `site_data.r2_score`{python exec}. This indicates that the linear regression model explains a large portion of the variability in the data, suggesting a strong trend.
+
+```python exec
+show_trend = True
+```
+
+::: else
+
+The trend fit is valid with an excellent R² score of `site_data.r2_score`{python exec}. This indicates that the linear regression model explains almost all the variability in the data, suggesting a very strong trend.
+
+```python exec
+show_trend = True
+```
+
+:::
+
+::: if show_trend
+
+:::: if abs(site_data.trend) < weak_trend_threshold
+
+::::: if site_data.trend < 0 
+
+The coast is eroding very slightly, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered negligible.
+
+::::: else
+
+The coast is accreting very slightly, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered negligible.
+
+:::::
+
+:::: elif abs(site_data.trend) < strong_trend_threshold
+
+::::: if site_data.trend < 0
+
+The coast is eroding, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered weak.
+
+::::: else
+
+The coast is accreting, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered weak.
+
+:::::
+
+:::: else
+
+::::: if site_data.trend < 0
+
+The coast is eroding significantly, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered strong.
+
+::::: else
+
+The coast is accreting significantly, with a trend of **`site_data.trend`{python exec}** m/year. This trend is considered strong.
+
+:::::
+
+::::
+
+:::
+
 - `site_data.orientation`{python exec} is the orientation of the site in degrees.
 - `site_data.along_dist`{python exec} is the alongshore distance from a reference point.
 - `site_data.along_dist_norm`{python exec} is the normalized alongshore distance.
@@ -97,15 +203,75 @@ else:
 - `site_data.n_points`{python exec} is the total number of points used in the analysis.
 - `site_data.n_points_nonan`{python exec} is the number of points used in the analysis that
 
-**Results Production**
+## Theshold Values 
+
+|        | Threshold         | Actual Value         |
+---------|-------------------|---------------------|
+| Trend | < `trend_threshold`{python exec}   | `site_data.trend`{python exec} |
+| R^2 Score | < 0.3 | `site_data.r2_score`{python exec} |
+| Noise | > `noise_threshold`{python exec}   | `site_data.rmse`{python exec} |
+
+## Provenance
+
+### Data Production
+
+```python exec
+target_types = {"SoftwareSourceCode", "HowTo", "File"} # The main workflow entity of the interface.crate
+matched_entity = None
+
+for entity in crate_metadata.get("@graph", []):
+    types = entity.get("@type")
+    if types:
+        if isinstance(types, list) and target_types.issubset(set(types)):
+            matched_entity = entity
+            break
+        elif isinstance(types, str) and types in target_types:
+            matched_entity = entity
+            break
+
+# Check that formal_param is represented within the entity's output field
+output_has_formal_param = False
+if matched_entity:
+    output_field = matched_entity.get("output")
+    if isinstance(output_field, list):
+        output_has_formal_param = any(
+            (isinstance(o, dict) and o.get("@id") == formal_param) or
+            (isinstance(o, str) and o == formal_param)
+            for o in output_field
+        )
+    elif isinstance(output_field, dict):
+        output_has_formal_param = output_field.get("@id") == formal_param
+    elif isinstance(output_field, str):
+        output_has_formal_param = output_field == formal_param
+
+# Return the entity and whether formal_param is present in output
+result = {
+    "entity": matched_entity,
+    "formal_param_in_output": output_has_formal_param
+}
+```
+
+The reults of this transect where derived from 
+
+
+### Data Source
 
 This transect data can be found `dict(type="Link", target=f"{result_file["@id"]}", content=[dict(type="Text", value=f"here")])`{python exec}.
 
 ::: if "nzd" in site_data.id or "sar" in site_data.id
 
+```python exec
+# Get provenance information for NZD/SAR datasets
+
+```
+
 The results shown for this transect are based on pre processed data form coastSat. 
 
 ::: else
+
+```python exec
+# Get provenance information for PacificRim Dataset
+```
 
 The results shown for this transect are based on an external dataset -- PacificRim Data. 
 

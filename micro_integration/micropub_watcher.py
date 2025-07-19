@@ -15,9 +15,10 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-# NOTE: For production deployment, update the CORS origins to reflect your deployed frontend's domain.
-# Allow only requests from localhost:8000 during development
-CORS(app, origins=["http://localhost:8000"], supports_credentials=True)
+# Set CORS origins from environment variable, fallback to localhost for development
+frontend_origin = os.environ.get("FRONTEND_ORIGIN", "*")
+print(f"Setting CORS origin to: {frontend_origin}")
+CORS(app, origins=[frontend_origin], supports_credentials=True)
 
 BASE_DIR = os.path.dirname(__file__)
 REQUESTS_DIR = os.path.join(BASE_DIR, "requests")
@@ -72,12 +73,15 @@ def run_stencila_pipeline(p_id, unique_id):
         print(f"❌ Error in Stencila pipeline for {p_id}: {e}")
         return None
 
-@app.route("/request", methods=["POST"])
+@app.route("/request", methods=["POST", "OPTIONS"])
 def handle_request():
     """
     Accepts a POST request with JSON body {"id": "..."} and writes a new request file
     to micro_integration/requests/ to trigger the watcher.
     """
+    if request.method == "OPTIONS":
+        return '', 204  # Preflight response
+
     data = request.get_json()
     p_id = data.get("id")
     if not p_id:
@@ -178,6 +182,16 @@ def check_and_download_latest_crate():
     except Exception as e:
         print(f"❌ Failed to check/download publication.crate: {e}")
 
+@app.after_request
+def apply_cors_headers(response):
+    origin = request.headers.get("Origin")
+    allowed_origins = ["http://localhost:8000", "http://127.0.0.1:8000", "http://130.216.216.92"]
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
 if __name__ == "__main__":
     os.makedirs(REQUESTS_DIR, exist_ok=True)
     os.makedirs(TMP_DIR, exist_ok=True)
@@ -196,7 +210,7 @@ if __name__ == "__main__":
     observer.schedule(event_handler, path=REQUESTS_DIR, recursive=False)
     observer.start()
 
-    server_thread = Thread(target=app.run, kwargs={"port": 8765})
+    server_thread = Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 8765})
     server_thread.start()
 
     try:
