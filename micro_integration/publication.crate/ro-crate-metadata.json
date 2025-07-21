@@ -7,7 +7,7 @@
             "creator": {
                 "@id": "#creator"
             },
-            "datePublished": "2025-07-20T10:09:34+00:00",
+            "datePublished": "2025-07-21T09:00:33+00:00",
             "description": "This crate contains the interface.crate and a Stencila DNF document for generating micropublications.",
             "hasPart": [
                 {
@@ -48,7 +48,7 @@
             "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
             "encodingFormat": "application/smd",
             "name": "DNF Document File",
-            "sha256": "e490b1463d2edece9bc6c6ed9a9fad158a98a24bac04629f57e258d59691f152"
+            "sha256": "0af548a7a860093ffddaa5aa7ae6ad1a302743ca6961a1293e4b570756ae0aa0"
         },
         {
             "@id": "interface.crate/",
@@ -144,7 +144,7 @@
                 }
             ],
             "name": "LivePublication: A Dynamic and Reproducible Research Article",
-            "url": "https://github.com/GusEllerm/CoastSat-micropublication/releases/tag/crate-release-2025-07-20_22-09-36",
+            "url": "https://github.com/GusEllerm/CoastSat-micropublication/releases/tag/crate-release-2025-07-21_21-00-34",
             "wasGeneratedBy": [
                 {
                     "@id": "#dnf-presentation-environment"

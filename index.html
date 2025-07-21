@@ -279,6 +279,66 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         "High erodibility": L.layerGroup().addTo(map)
       }
 
+      window.addEventListener("DOMContentLoaded", () => {
+        if (window.ENABLE_MICROPUBLICATIONS) {
+          console.log("Enabling micropublications")
+          fetch("shorelines.geojson")
+            .then(response => {
+              if (!response.ok) {
+                console.error("Failed to load shorelines.geojson:", response.statusText);
+                return null;
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (!data) {
+                console.warn("No data returned from shorelines.geojson");
+                return;
+              }
+
+              console.log("shorelines.geojson loaded successfully.");
+              console.log("Number of features:", data.features.length);
+
+              shorelines_trends = L.geoJSON(data, {
+                style: function (feature) {
+                  return {
+                    color: "blue",
+                    weight: 4,
+                    opacity: 0.7,
+                    lineJoin: "round", 
+                    lineCap: "round"
+                  };
+                },
+                onEachFeature: function (feature, layer) {
+                  const popupContent = `
+                    <strong>Site ID:</strong> ${feature.properties.id}<br>
+                    <strong>Mean Trend:</strong> ${feature.properties.n_points}<br>
+                    <strong>Median Slope:</strong> ${feature.properties.n_points_nonan}<br>
+                  `;
+                  layer.bindPopup(popupContent);
+                  // Add hover effect
+                  layer.on("mouseover", function () {
+                    this.setStyle({
+                      weight: 8,
+                      color: "#00bfff" // light blue highlight
+                    });
+                    this.bringToFront(); // ensures it appears above other layers
+                  });
+
+                  layer.on("mouseout", function () {
+                    this.setStyle({
+                      weight: 4,
+                      color: "blue"
+                    });
+                  });
+                }
+              }).addTo(map);
+            })
+            .catch(error => {
+              console.error("Error loading or parsing shorelines.geojson:", error);
+            });
+          }
+        });
       L.control.layers(baseMaps, overlays, { position: "topleft" }).addTo(map);
 
       var layers = [null, "Medium", "High"]
@@ -432,70 +492,6 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                 }
               });
             }
-            Papa.parse(url, {
-              download: true,
-              header: true,
-              dynamicTyping: true,
-              skipEmptyLines: true,
-              complete: function (results) {
-                console.log(results)
-                var filtered_data = results.data.filter(d => d[p.id])
-                var dates = filtered_data.map(d => d.dates)
-                var values = filtered_data.map(d => d[p.id])
-                var satname = filtered_data.map(d => d.satname)
-                var mean = Plotly.d3.mean(values)
-                values = values.map(v => v ? v - mean : v)
-                console.log(dates, values)
-                var min_date = new Date(results.data[0].dates)
-                var max_date = new Date(results.data[results.data.length - 1].dates)
-                var datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25
-                var data = [{
-                  type: "scatter",
-                  mode: "lines+markers",
-                  name: "chainage",
-                  x: dates,
-                  y: values,
-                  //line: {color: '#17BECF'}
-                }, {
-                  type: "line",
-                  x: [min_date, max_date],
-                  y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
-                  name: "trendline"
-                }];
-                var layout = {
-                  title: `Time series for ${p.id}`,
-                  xaxis: {
-                    title: "Date/Time"
-                  },
-                  yaxis: {
-                    title: "cross-shore change [m]",
-                    hoverformat: '.1f'
-                  }
-                };
-                window.popup.addTo(map);
-                setTimeout(() => {
-                  if (document.getElementById("debug-plot")) {
-                    Plotly.newPlot("debug-plot", data, layout);
-                  }
-                }, 0);
-                var px = map.project(e.latlng);
-                console.log(px)
-                px.y -= 400;
-                map.panTo(map.unproject(px), { animate: true });
-                if (debug) {
-                  $("#plot").on('plotly_hover plotly_click', function (event, data) {
-                    console.log(data)
-                    var d = data.points[0].x;
-                    console.log(`Hovered on ${d}`)
-                    var dt = dates[data.points[0].pointIndex].replace("+00:00", "").replace(/[ :]/g, "-");
-                    var sat = satname[data.points[0].pointIndex]
-                    var plot_url = `https://wave.storm-surge.cloud.edu.au/CoastSat_data/${p.site_id}/jpg_files/detection/${dt}_${sat}.jpg`
-                    console.log(plot_url)
-                    $("#img").attr("src", plot_url);
-                  })
-                }
-              }
-            })
           },
           sensitivity: .0001
         });

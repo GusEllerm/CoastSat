@@ -6,61 +6,17 @@ let lastGeneratedFilename = null;
 let popupListenerRegistered = false;
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {
   const container = document.createElement("div");
-  container.className = "popup-content";
-
   const tabs = `
-    <div class="tab-buttons">
-      <button class="tab-button active" data-tab="tab1">Info</button>
-      <button class="tab-button" data-tab="tab2">MicroPublication</button>
+  <div class="popup-content">
+    <div class="micropub-iframe-container with-fade">
+      <div id="iframe-loading" class="loading-spinner"></div>
+      <iframe id="debug-iframe" style="width: 100%; border: none; display: none;" height="500"></iframe>
     </div>
-    <div id="tab1" class="tab-content active">
-      <b>${p.id}</b><br>
-      along_dist: ${p.along_dist?.toFixed(2)}<br>
-      along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
-      origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
-      destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
-      beach_slope: ${p.beach_slope}<br>
-      n_points: ${p.n_points}<br>
-      n_points_nonan: ${p.n_points_nonan}<br>
-      orientation: ${p.orientation?.toFixed(2)}<br>
-      trend: ${p.trend?.toFixed(2)} m/year<br>
-      R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
-      mae: ${p.mae?.toFixed(2)}<br>
-      mse: ${p.mse?.toFixed(2)}<br>
-      rmse: ${p.rmse?.toFixed(2)}<br>
-      site: ${p.site_id}<br>
-      ${download}
-      ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
+    <div class="micropub-plot-container">
+      <div id="plot"></div>
     </div>
-    <div id="tab2" class="tab-content">
-      <iframe id="debug-iframe" style="width: 100%; border: none; display: none;" height="400"></iframe>
-    </div>
-    <div id="debug-plot"></div>`;
+  </div>`;
   container.innerHTML = tabs;
-
-  const tabButtons = container.querySelectorAll(".tab-button");
-  const tabContents = container.querySelectorAll(".tab-content");
-  
-  tabButtons.forEach(button => {
-      button.addEventListener("click", function () {
-        tabButtons.forEach(btn => btn.classList.remove("active"));
-        tabContents.forEach(content => content.classList.remove("active"));
-
-        this.classList.add("active");
-        const targetId = this.getAttribute("data-tab");
-        const targetContent = container.querySelector(`#${targetId}`);
-        if (targetContent) {
-          targetContent.classList.add("active");
-        }
-        const tabId = button.dataset.tab;
-        const iframe = document.getElementById('debug-iframe');
-        if (tabId === "tab2") {
-          iframe.style.display = "block";
-        } else {
-          iframe.style.display = "none";
-        }
-      });
-    });
 
   window.popup = L.popup({ minWidth: 800 })
     .setContent(container)
@@ -83,12 +39,14 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
       let attempts = 0;
       const checkMicropublicationReady = () => {
         const iframe = document.getElementById('debug-iframe');
-        const url = `${MICROPUB_API_BASE}/tmp/${thisPopupFilename}`;
-        fetch(url, { method: 'HEAD' })
+        const mciro_url = `${MICROPUB_API_BASE}/tmp/${thisPopupFilename}`;
+        fetch(mciro_url, { method: 'HEAD' })
           .then(res => {
             if (res.ok) {
               if (lastGeneratedFilename === thisPopupFilename) {
-                iframe.src = url;
+                iframe.src = mciro_url;
+                document.getElementById('iframe-loading').style.display = "none";
+                iframe.style.display = "block";
               }
             } else if (attempts < maxAttempts) {
               attempts++;
@@ -114,35 +72,60 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
     dynamicTyping: true,
     skipEmptyLines: true,
     complete: function (results) {
-      const filtered_data = results.data.filter(d => d[p.id]);
-      const dates = filtered_data.map(d => d.dates);
-      const values = filtered_data.map(d => d[p.id]);
-      const satname = filtered_data.map(d => d.satname);
-      const mean = Plotly.d3.mean(values);
-      const adjusted_values = values.map(v => v ? v - mean : v);
-
-      const min_date = new Date(results.data[0].dates);
-      const max_date = new Date(results.data[results.data.length - 1].dates);
-      const datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25;
-
-      const data = [{
+      console.log(results)
+      var filtered_data = results.data.filter(d => d[p.id])
+      var dates = filtered_data.map(d => d.dates)
+      var values = filtered_data.map(d => d[p.id])
+      var satname = filtered_data.map(d => d.satname)
+      var mean = Plotly.d3.mean(values)
+      values = values.map(v => v ? v - mean : v)
+      console.log(dates, values)
+      var min_date = new Date(results.data[0].dates)
+      var max_date = new Date(results.data[results.data.length - 1].dates)
+      var datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25
+      var data = [{
         type: "scatter",
         mode: "lines+markers",
         name: "chainage",
         x: dates,
-        y: adjusted_values,
+        y: values,
       }, {
         type: "line",
         x: [min_date, max_date],
         y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
         name: "trendline"
       }];
-
-      const layout = {
-        title: `Time series for ${p.id}`,
-        xaxis: { title: "Date/Time" },
-        yaxis: { title: "cross-shore change [m]", hoverformat: '.1f' }
+      var layout = {
+        height: 250,
+        font: { size: 10 },
+        margin: { l: 50, r: 20, t: 10, b: 40 },
+        yaxis: {
+          title: "cross-shore change [m]",
+          hoverformat: '.1f',
+          gridcolor: '#eee'
+        },
+        xaxis: {
+          gridcolor: '#eee'
+        },
+        showlegend: false
       };
+      Plotly.newPlot("plot", data, layout);
+      var px = map.project(e.latlng);
+      console.log(px)
+      px.y -= 400;
+      map.panTo(map.unproject(px), { animate: true });
+      if (debug) {
+        $("#plot").on('plotly_hover plotly_click', function (event, data) {
+          console.log(data)
+          var d = data.points[0].x;
+          console.log(`Hovered on ${d}`)
+          var dt = dates[data.points[0].pointIndex].replace("+00:00", "").replace(/[ :]/g, "-");
+          var sat = satname[data.points[0].pointIndex]
+          var plot_url = `https://wave.storm-surge.cloud.edu.au/CoastSat_data/${p.site_id}/jpg_files/detection/${dt}_${sat}.jpg`
+          console.log(plot_url)
+          $("#img").attr("src", plot_url);
+        })
+      }
     }
   });
 

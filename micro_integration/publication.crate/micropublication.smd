@@ -288,7 +288,6 @@ show_trend = False
 
 :::
 
-
 ::: if show_trend
 
 :::: if abs(site_data.trend) < weak_trend_threshold
@@ -359,7 +358,7 @@ except Exception:
 
 ::: if "nzd" in site_data.id 
 
-```python exec
+```python exec 
 # For the growing NZ dataset, we want to link and compare the current version of the data with the previous version.
 # First, load the create_action which models the batch processing of NZ transects
 nz_create_action = batch_processes_crate.get("#batch-process-nz")
@@ -413,14 +412,38 @@ This transect contains **`site_data.n_points`{python exec}** data points, with *
 ### Data Production
 
 Linear model results for all transects can be downloaded `dict(type="Link", target=primary_result_url, content=[dict(type="Text", value=f"here")])`{python exec}.
-The data for this transect has not changed since the last processing. The current version of the data is identical to the previous version.
+The data for this transect was not updated during the current processing cycle (`run_date`{python exec}). The current version of the data is identical to the previous version.
+The graph below illustrates the data this transect was derived from, and provides links to (1) the input transect data, (2) the full transect regression data, and (3) a link to a secondary publication.crate describing the CoastSat methodology (Analysis).
+
+```mermaid exec
+flowchart LR
+
+    A[/"{{ current_timeserries_name }}"/]
+
+    subgraph Analysis
+        D[/"Trend Analysis"/]
+    end
+
+    A --> Analysis
+
+    Analysis --> E[/"Transect Regression Data"/]
+
+    click A href "{{ current_timeserries_url }}" _blank
+    click E href "{{ primary_result_url }}" _blank
+```
 
 :::: else 
+
+```python exec
+# Grab the Gist link and JS to embed the batch process instrumentation
+gist_link = batch_processes_crate.get("#batch-process-nz-app")["associatedMedia"]
+gist_embed = batch_processes_crate.get("#batch-process-nz-app")["embedCode"]
+```
 
 ### Data Production
 
 This transect has been updated on `run_date`{python exec} during the current processing cycle, and was processed using the instrument `instrument_name`{python exec}.
-The graph below illustrates the data flow from the previous timeseries to the current timeseries, and provides links to (1) the previous and current timeseries data files, (2) the instrument used for processing, and (3) a link to a secondary publication.crate describing the CoastSat methodology.
+The graph below illustrates the data flow from the previous timeseries to the current timeseries, and provides links to (1) the previous and current timeseries data files, (2) the instrument used for processing, and (3) a link to a secondary publication.crate describing the CoastSat methodology (Analysis).
 
 ```mermaid exec
 flowchart LR
@@ -442,20 +465,30 @@ flowchart LR
     click E href "{{ primary_result_url }}" _blank
 ```
 
-> [!info]+ Batch Process Instrumentation
-> <div> <script src="https://gist.github.com/GusEllerm/b8c382728f321ae25c224a201bca476b.js"></script> </div>
+View, download, and comment on the batch process instrumentation `dict(type="Link", target=gist_link, content=[dict(type="Text", value=f"here")])`{python exec}.
+
+```python exec
+# Check that the new data is not empty
+df = get_appended_rows(previous_timeserries_url, current_timeserries_url, filter_column=site_data.id)
+df = df[["dates", site_data.id, "satname"]]
+df["dates"] = pd.to_datetime(df["dates"]).dt.strftime("%B %d, %Y")
+# Rename column to include units
+df = df.rename(columns={site_data.id: f"{site_data.id} (meters)"})
+```
+
+::::: if df.empty
+
+While the data for this transect was updated during the current processing cycle (`run_date`{python exec}), only empty rows were appended.
+
+::::: else
 
 > [!info]+ Data Appended to Transect
 > The table below shows the appended data for this transect, described by the processes within the Data-Preprocessing subgraph in Figure X.
 > ```python exec 
-> # Only return rows that have data for the transect 
-> df = get_appended_rows(previous_timeserries_url, current_timeserries_url, filter_column=site_data.id)
-> df = df[["dates", site_data.id, "satname"]]
-> df["dates"] = pd.to_datetime(df["dates"]).dt.strftime("%B %d, %Y")
-> # Rename column to include units
-> df = df.rename(columns={site_data.id: f"{site_data.id} (meters)"})
 > df
 > ```
+
+:::::
 
 ::::
 
@@ -487,13 +520,6 @@ current_timeserries_url = current_timeserries.get("@id")
 instrument_url = instrument.get("codeRepository")
 ```
 
-:::: if (previous_timeserries.get('sha256') == current_timeserries.get('sha256'))
-
-Linear model results for all transects can be downloaded `dict(type="Link", target=primary_result_url, content=[dict(type="Text", value=f"here")])`{python exec}.
-The data for this transect has not changed since the last processing. The current version of the data is identical to the previous version.
-
-:::: else 
-
 ### Transect Data Characteristics
 
 ```python exec
@@ -516,10 +542,35 @@ This transect contains **`site_data.n_points`{python exec}** data points, with *
 
 :::
 
+:::: if (previous_timeserries.get('sha256') == current_timeserries.get('sha256'))
+
+Linear model results for all transects can be downloaded `dict(type="Link", target=primary_result_url, content=[dict(type="Text", value=f"here")])`{python exec}.
+The data for this transect was not updated during the current processing cycle (`date_str`{python exec}). The current version of the data is identical to the previous version.
+The graph below illustrates the data this transect was derived from, and provides links to (1) the input transect data, (2) the full transect regression data, and (3) a link to a secondary publication.crate describing the CoastSat methodology (Analysis).
+
+```mermaid exec
+flowchart LR
+
+    A[/"{{ current_timeserries_name }}"/]
+
+    subgraph Analysis
+        D[/"Trend Analysis"/]
+    end
+
+    A --> Analysis
+
+    Analysis --> E[/"Transect Regression Data"/]
+
+    click A href "{{ current_timeserries_url }}" _blank
+    click E href "{{ primary_result_url }}" _blank
+```
+
+:::: else 
+
 ### Data Production
 
 This transect has been updated on `run_date`{python exec} during the current processing cycle, and was processed using the instrument `instrument_name`{python exec}.
-The graph below illustrates the data flow from the previous timeseries to the current timeseries, and provides links to (1) the previous and current timeseries data files, (2) the instrument used for processing, and (3) a link to a secondary publication.crate describing the CoastSat methodology.
+The graph below illustrates the data flow from the previous timeseries to the current timeseries, and provides links to (1) the previous and current timeseries data files, (2) the instrument used for processing, and (3) a link to a secondary publication.crate describing the CoastSat methodology (Analysis).
 
 ```mermaid exec
 flowchart LR
@@ -541,27 +592,114 @@ flowchart LR
     click E href "{{ primary_result_url }}" _blank
 ```
 
+::::: if df.empty
+
+While the data for this transect was updated during the current processing cycle (`run_date`{python exec}), only empty rows were appended.
+
+::::: else
+
 > [!info]+ Data Appended to Transect
 > The table below shows the appended data for this transect, described by the processes within the Data-Preprocessing subgraph in Figure X.
 > ```python exec 
-> # Only return rows that have data for the transect 
-> df = get_appended_rows(previous_timeserries_url, current_timeserries_url, filter_column=site_data.id)
-> df = df[["dates", site_data.id, "satname"]]
-> df["dates"] = pd.to_datetime(df["dates"]).dt.strftime("%B %d, %Y")
-> # Rename column to include units
-> df = df.rename(columns={site_data.id: f"{site_data.id} (meters)"})
 > df
 > ```
 
+:::::
 
 ::::
 
 ::: else
 
-pacific rim
+### Data Production
+
+```python exec
+# Grab information reagrding the Pacific Rim Dataset used for this transect
+external_data_entity = interface_crate.get("external-data")
+Pacific_Rim_Dataset = resolve_linked_entity(interface_crate, external_data_entity, "hasPart")
+Pacific_Rim_Dataset_url = Pacific_Rim_Dataset.get("@id")
+
+def get_zenodo_record_info(record_url_or_id):
+    """Fetch metadata from a Zenodo record using the REST API."""
+    # Extract record ID from URL if a full URL is provided
+    if isinstance(record_url_or_id, str) and record_url_or_id.startswith("http"):
+        record_id = record_url_or_id.rstrip("/").split("/")[-1]
+    else:
+        record_id = str(record_url_or_id)
+
+    api_url = f"https://zenodo.org/api/records/{record_id}"
+    response = requests.get(api_url)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to fetch record {record_id}: HTTP {response.status_code}")
+
+def get_crossref_metadata(doi):
+    """Fetch metadata from Crossref using a DOI."""
+    headers = {"Accept": "application/json"}
+    url = f"https://api.crossref.org/works/{doi}"
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()['message']
+        return {
+            'title': data.get('title', [''])[0],
+            'author_list': [f"{a.get('given', '')} {a.get('family', '')}" for a in data.get('author', [])],
+            'published': "-".join(str(i) for i in data.get('issued', {}).get('date-parts', [[None]])[0]),
+            'publisher': data.get('publisher'),
+            'journal': data.get('container-title', [''])[0],
+            'url': data.get('URL'),
+        }
+    else:
+        raise Exception(f"DOI {doi} not found or request failed (HTTP {response.status_code}).")
+
+# Example usage
+record_info = get_zenodo_record_info(Pacific_Rim_Dataset_url)
+record_title = record_info['metadata'].get('title', 'No title available')
+record_publication_date = record_info['metadata'].get('publication_date', 'No publication date available')
+record_creator = record_info['metadata'].get('creators', [{'name': 'Unknown'}])[0].get('name', 'Unknown')
+record_creator_affiliation = record_info['metadata'].get('creators', [{'affiliation': 'Unknown'}])[0].get('affiliation', 'Unknown')
+record_licence = record_info['metadata'].get('license', 'No license available')
+record_doi_url = record_info['links'].get('doi', 'No DOI available')
+record_title = record_info['metadata'].get('title', 'No title available')
+record_version = record_info['metadata'].get('version', 'No version available')
+record_related_identifiers = record_info['metadata'].get('related_identifiers', [])
+record_code_repository = record_info['metadata'].get('custom', {}).get('code:codeRepository', 'No code repository available')
+record_development_status = record_info['metadata'].get('custom', {}).get('code:developmentStatus', {}).get('title', {}).get('en', 'No development status available')
+```
+
+This transect's data is from an external dataset, the **Pacific Rim Dataset**. 
+This version (`record_version`{python exec}) of the dataset used for this transect was published on `record_publication_date`{python exec} by `record_creator`{python exec} from `record_creator_affiliation`{python exec}.
+
+This release is associated with the following research articles(s):
+
+:::: for record in record_related_identifiers
+
+::::: if record['relation'] == 'isSourceOf'
+
+```python exec
+# Get the Crossref metadata for the related identifier
+crossref_metadata = get_crossref_metadata(record['identifier'])
+crossref_title = crossref_metadata['title']
+crossref_authors = ", ".join(crossref_metadata['author_list'])
+crossref_published = crossref_metadata['published']
+crossref_publisher = crossref_metadata['publisher']
+crossref_journal = crossref_metadata['journal']
+crossref_url = crossref_metadata['url']
+```
+
+> [!info]+ Related Research Article
+> ### `dict(type="Link", target=crossref_url, content=[dict(type="Text", value=crossref_title)])`{python exec} 
+> - **Journal**: `crossref_journal`{python exec}
+> - **Authors**: `crossref_authors`{python exec}
+> - **Published**: `crossref_published`{python exec}
+> - **Publisher**: `crossref_publisher`{python exec}
+
+:::::
+
+::::
 
 :::
-
 
 #### Micropublication Data
 
