@@ -15,10 +15,6 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-# Set CORS origins from environment variable, fallback to localhost for development
-frontend_origin = os.environ.get("FRONTEND_ORIGIN", "*")
-print(f"Setting CORS origin to: {frontend_origin}")
-CORS(app, origins=[frontend_origin], supports_credentials=True)
 
 BASE_DIR = os.path.dirname(__file__)
 REQUESTS_DIR = os.path.join(BASE_DIR, "requests")
@@ -185,11 +181,15 @@ def check_and_download_latest_crate():
 @app.after_request
 def apply_cors_headers(response):
     origin = request.headers.get("Origin")
-    allowed_origins = ["http://localhost:8000", "http://127.0.0.1:8000", "http://130.216.216.92"]
+    allowed_origins = ["http://localhost:8000", "http://127.0.0.1:8000", "http://130.216.216.92", "http://coastsat.livepublication.org", "https://coastsat.livepublication.org"]
     if origin in allowed_origins:
+        print(f"🌐 CORS allowed for origin: {origin}")
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    else:
+        print(f"🚫 CORS denied for origin: {origin}")
+        response.headers["Access-Control-Allow-Origin"] = "null"
     return response
 
 if __name__ == "__main__":
