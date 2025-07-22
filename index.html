@@ -131,6 +131,54 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
     input:checked + .slider:before {
       transform: translateX(22px);
     }
+
+    /* Floating toggle controls */
+    .leaflet-control-toggles {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+      margin: 10px 0;
+    }
+
+    .toggle-button {
+      width: 34px;
+      height: 34px;
+      background: white;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      margin-bottom: 0;
+    }
+
+    .toggle-button:last-child {
+      margin-bottom: 0;
+    }
+
+    .toggle-button:hover {
+      background-color: #f4f4f4;
+      border-color: #aaa;
+    }
+
+    .toggle-button.active {
+      background-color: #007ACC;
+      border-color: #007ACC;
+      color: white;
+    }
+
+    .toggle-button.active:hover {
+      background-color: #005A9F;
+      border-color: #005A9F;
+    }
+
+    /* Hidden transect container */
+    .toggle-button.hidden {
+      display: none;
+    }
   </style>
 </head>
 
@@ -169,20 +217,6 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           shoreline. Once you do so, you can click the below button to send your shoreline to us via email.<br>
           <a id="mailto" target="_blank" class="btn btn-primary" disabled>Email Us</a>
           <hr>
-          <div style="margin-top: 10px;">
-            <label for="microToggle" style="display: inline-block; margin-right: 10px;"><strong>Enable Micropublications</strong></label>
-            <label class="switch">
-              <input type="checkbox" id="microToggle">
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div style="margin-top: 10px;" id="transectToggleContainer" style="display: none;">
-            <label for="transectToggle" style="display: inline-block; margin-right: 10px;"><strong>Show Transect Lines</strong></label>
-            <label class="switch">
-              <input type="checkbox" id="transectToggle">
-              <span class="slider round"></span>
-            </label>
-          </div>
         </div>
       </div>
     </div>
@@ -329,6 +363,11 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                         console.warn(`Shoreline ${index}: coordinate/color length mismatch`, coords.length, colors.length);
                         return;
                     }
+                    
+                    // Transform negative longitudes to positive (same as transects)
+                    coords.forEach(coord => {
+                        if (coord[0] < 0) coord[0] += 360;
+                    });
                     
                     // Convert coordinates to Leaflet format [lat, lng]
                     const latLngs = coords.map(coord => [coord[1], coord[0]]);
@@ -618,6 +657,92 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       };
 
       legend.addTo(map);
+
+      // Create floating toggle controls
+      var togglesControl = L.control({ position: 'topleft' });
+
+      togglesControl.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'leaflet-control-toggles');
+        
+        // Create button-style toggles with symbols
+        div.innerHTML = `
+          <div class="toggle-button" id="microToggle" title="Enable Micropublications">
+            📄
+          </div>
+          <div class="toggle-button" id="transectToggle" title="Show Transect Lines">
+            📏
+          </div>
+        `;
+        
+        // Prevent map interaction when clicking on the control
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+        
+        return div;
+      };
+
+      togglesControl.addTo(map);
+
+      // Setup toggle event handlers after the control is added
+      function setupToggleHandlers() {
+        const microToggle = document.getElementById("microToggle");
+        const transectToggle = document.getElementById("transectToggle");
+        
+        if (microToggle) {
+          // Set initial state
+          if (window.ENABLE_LIVEPUBLICATIONS) {
+            microToggle.classList.add('active');
+          }
+
+          microToggle.addEventListener("click", function () {
+            const url = new URL(window.location.href);
+            if (this.classList.contains('active')) {
+              url.searchParams.delete("micro");
+            } else {
+              url.searchParams.set("micro", "true");
+            }
+            window.location.href = url.toString();
+          });
+        }
+
+        if (transectToggle) {
+          // Handle transect toggle visibility and functionality
+          if (window.ENABLE_LIVEPUBLICATIONS) {
+            // Show the transect toggle when micropublications are enabled
+            transectToggle.classList.remove('hidden');
+            
+            // Set initial state
+            if (window.SHOW_TRANSECTS) {
+              transectToggle.classList.add('active');
+            }
+            
+            transectToggle.addEventListener("click", function () {
+              window.SHOW_TRANSECTS = !window.SHOW_TRANSECTS;
+              
+              // Toggle visual state
+              if (window.SHOW_TRANSECTS) {
+                this.classList.add('active');
+              } else {
+                this.classList.remove('active');
+              }
+              
+              console.log("Transect visibility changed to:", window.SHOW_TRANSECTS);
+              
+              // Re-render the current data with new transect visibility
+              if (window.data) {
+                var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
+                plotData({ type: "FeatureCollection", features: filtered_data });
+              }
+            });
+          } else {
+            // Hide the transect toggle when micropublications are disabled
+            transectToggle.classList.add('hidden');
+          }
+        }
+      }
+
+      // Run setup after a brief delay to ensure DOM is ready
+      setTimeout(setupToggleHandlers, 100);
     </script>
 </script>
   <script>
@@ -630,46 +755,6 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
   </script>
   <script src="livepub_integration/glify_micropublication.js"></script>
   <script src="livepub_integration/glify_shorelinepublication.js"></script>
-  <script>
-    const toggle = document.getElementById("microToggle");
-    if (toggle) {
-      toggle.checked = window.ENABLE_LIVEPUBLICATIONS;
-
-      toggle.addEventListener("change", function () {
-        const url = new URL(window.location.href);
-        if (this.checked) {
-          url.searchParams.set("micro", "true");
-        } else {
-          url.searchParams.delete("micro");
-        }
-        window.location.href = url.toString();
-      });
-    }
-
-    // Handle transect toggle visibility and functionality
-    const transectToggleContainer = document.getElementById("transectToggleContainer");
-    const transectToggle = document.getElementById("transectToggle");
-    
-    if (window.ENABLE_LIVEPUBLICATIONS) {
-      // Show the transect toggle when micropublications are enabled
-      transectToggleContainer.style.display = "block";
-      transectToggle.checked = window.SHOW_TRANSECTS;
-      
-      transectToggle.addEventListener("change", function () {
-        window.SHOW_TRANSECTS = this.checked;
-        console.log("Transect visibility changed to:", window.SHOW_TRANSECTS);
-        
-        // Re-render the current data with new transect visibility
-        if (window.data) {
-          var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
-          plotData({ type: "FeatureCollection", features: filtered_data });
-        }
-      });
-    } else {
-      // Hide the transect toggle when micropublications are disabled
-      transectToggleContainer.style.display = "none";
-    }
-  </script>
 </body>
 
 </html>

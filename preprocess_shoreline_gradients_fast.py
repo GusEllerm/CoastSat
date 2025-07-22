@@ -244,8 +244,36 @@ def process_shoreline_gradients_fast():
     total_checks = 0
     process_start = time.time()
     
+    # Get list of region prefixes that exist in transects
+    valid_regions = set()
+    for transect in transects['features']:
+        transect_id = transect['properties']['id']
+        if '_' in transect_id:
+            prefix = transect_id.split('_')[0]
+            valid_regions.add(prefix)
+        else:
+            # For numbered transects, they correspond to numbered/USA shorelines
+            valid_regions.add('usa')
+    
+    print(f"Found transects for regions: {sorted(valid_regions)}")
+    
     for i, shoreline in enumerate(shorelines['features']):
         shore_start = time.time()
+        
+        # Get the region prefix from shoreline ID
+        shore_id = shoreline['properties']['id']
+        
+        # Extract region prefix
+        if '_' in shore_id:
+            region_prefix = shore_id.split('_')[0]
+        else:
+            # For numbered IDs, treat as USA
+            region_prefix = 'usa'
+        
+        # Only process shorelines that have corresponding transects
+        if region_prefix not in valid_regions:
+            print(f"Skipping shoreline {shore_id} - no transects for region '{region_prefix}'")
+            continue
         
         if shoreline['geometry']['type'] != 'LineString':
             continue
