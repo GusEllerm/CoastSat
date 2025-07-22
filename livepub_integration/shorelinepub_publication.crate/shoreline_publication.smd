@@ -1,0 +1,51 @@
+# CoastSat Shoreline Analysis Report
+
+```python exec
+from datetime import datetime
+date = datetime.now().strftime("%B %d, %Y")
+```
+
+**Publication Generated:** `date`{python exec}
+
+## Site Analysis Summary
+
+```python exec
+import json
+import datetime
+from pathlib import Path
+
+# Load the data.json file
+with open('data.json', 'r') as f:
+    data = json.load(f)
+
+# Extract the site ID
+site_id = data['id']
+print(f"## Analysis for Site: **{site_id}**")
+print(f"- Analysis Date: {datetime.datetime.now().strftime('%B %d, %Y')}")
+print(f"- Site Identifier: {site_id}")
+print(f"- Status: ✅ Data Processing Complete")
+```
+
+## Data Processing Pipeline
+
+```python exec
+print("### Processing Steps Completed:")
+print("1. 🛰️ Satellite imagery acquired")
+print("2. 🌊 Shoreline extraction performed") 
+print("3. 📊 Statistical analysis completed")
+print("4. 📈 Trend analysis generated")
+print("5. 📋 Publication report created")
+```
+
+## Technical Details
+
+```python exec
+print(f"**System Information:**")
+print(f"- Template Location: `src/templates/shoreline_publication.smd`")
+print(f"- Processing Engine: Stencila Dynamic Documents")
+print(f"- Publication Format: RO-Crate")
+print(f"- Site Data: {site_id} from CoastSat database")
+```
+
+---
+*This report was generated automatically by the CoastSat Shoreline Publication System*

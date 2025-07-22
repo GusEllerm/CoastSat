@@ -1,0 +1,158 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "creator": {
+                "@id": "#creator"
+            },
+            "datePublished": "2025-07-22T03:43:12+00:00",
+            "description": "This crate contains the interface.crate and a Stencila DNF document for generating publications.",
+            "hasPart": [
+                {
+                    "@id": "shoreline_publication.smd"
+                },
+                {
+                    "@id": "interface.crate/"
+                },
+                {
+                    "@id": "publication_logic.py"
+                }
+            ],
+            "mainEntity": {
+                "@id": "#research-article"
+            },
+            "name": "Publication Crate"
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            }
+        },
+        {
+            "@id": "shoreline_publication.smd",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "SoftwareApplication"
+            ],
+            "conformsTo": {
+                "@id": "#stencila-schema"
+            },
+            "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
+            "encodingFormat": "application/smd",
+            "name": "DNF Document File",
+            "sha256": "8c9e023a5c7fc96a8017373d44c42aef2c596e1fce1ad33b93a3b8dd6d95747a"
+        },
+        {
+            "@id": "interface.crate/",
+            "@type": [
+                "RO-Crate",
+                "Dataset"
+            ],
+            "description": "Nested interface.crate containing Experiment Infrastructure execution data.",
+            "license": "https://creativecommons.org/licenses/by/4.0/",
+            "name": "Interface Crate"
+        },
+        {
+            "@id": "publication_logic.py",
+            "@type": [
+                "File",
+                "SoftwareSourceCode"
+            ],
+            "description": "Python logic for generating publications from the DNF document.",
+            "encodingFormat": "text/x-python",
+            "name": "Publication Logic",
+            "sha256": "e0209cb5c0ebfa640bcd88a0cf8cd004ec5ed4fc2572a8a847f8b0d64a6148ef"
+        },
+        {
+            "@id": "#creator",
+            "@type": "Person",
+            "name": "Unknown Author"
+        },
+        {
+            "@id": "#stencila",
+            "@type": "SoftwareApplication",
+            "description": "The DNF Engine used to resolve the dynamic narrative.",
+            "howToUse": "https://github.com/stencila/stencila/blob/main/docs/reference/cli.md",
+            "isBasedOn": [
+                {
+                    "@id": "#stencila-schema"
+                }
+            ],
+            "license": "https://www.apache.org/licenses/LICENSE-2.0",
+            "name": "Stencila",
+            "operatingSystem": "all",
+            "softwareVersion": "stencila 2.4.1",
+            "url": "https://github.com/stencila/stencila"
+        },
+        {
+            "@id": "#stencila-schema",
+            "@type": "CreativeWork",
+            "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
+            "license": "https://www.apache.org/licenses/LICENSE-2.0",
+            "name": "Stencila DNF Engine Specification",
+            "url": "https://github.com/stencila/stencila/tree/v2.4.1/schema"
+        },
+        {
+            "@id": "#dnf-evaluated-document",
+            "@type": [
+                "CreativeWork",
+                "SoftwareSourceCode"
+            ],
+            "description": "Headless publicatoion.crate; does not contain evaluated DNF document",
+            "isBasedOn": [
+                {
+                    "@id": "shoreline_publication.smd"
+                },
+                {
+                    "@id": "interface.crate/"
+                },
+                {
+                    "@id": "#stencila"
+                }
+            ],
+            "name": "Evaluated DNF Document"
+        },
+        {
+            "@id": "#dnf-presentation-environment",
+            "@type": "CreativeWork",
+            "description": "Environment responsible for converting the evaluated DNF document into presentation formats.",
+            "isBasedOn": [
+                {
+                    "@id": "#stencila"
+                }
+            ],
+            "name": "DNF Presentation Environment"
+        },
+        {
+            "@id": "#research-article",
+            "@type": "ScholarlyArticle",
+            "description": "Headless publication.crate; does not contain a main article",
+            "isBasedOn": [
+                {
+                    "@id": "#dnf-evaluated-document"
+                },
+                {
+                    "@id": "#dnf-presentation-environment"
+                }
+            ],
+            "name": "LivePublication: A Dynamic and Reproducible Research Article",
+            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-22_15-43-13",
+            "wasGeneratedBy": [
+                {
+                    "@id": "#dnf-presentation-environment"
+                },
+                {
+                    "@id": "publication_logic.py"
+                }
+            ]
+        }
+    ]
+}
