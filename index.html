@@ -331,15 +331,6 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                         useGradient: true
                     }).addTo(map);
                     
-                    // Add hover popup with statistics
-                    polycolorLine.bindPopup(`
-                        <strong>Shoreline Gradient</strong><br>
-                        Intersections: ${shoreline.properties.intersection_count}<br>
-                        Original Length: ${shoreline.properties.original_length.toFixed(1)} units<br>
-                        Gradient Points: ${coords.length}<br>
-                        Transects: ${shoreline.properties.transect_ids.slice(0, 3).join(', ')}${shoreline.properties.transect_ids.length > 3 ? '...' : ''}
-                    `);
-                    
                     // Add hover and click events
                     polycolorLine.on("mouseover", function () {
                       this.setStyle({
