@@ -306,6 +306,40 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       if (typeof window.leafletPolycolor !== 'undefined') {
         window.leafletPolycolor(L);
       }
+      
+      // Line smoothing function using Chaikin's algorithm
+      function smoothLine(points, iterations = 1) {
+        if (!points || points.length < 3) return points;
+        
+        let smoothed = [...points];
+        
+        for (let iter = 0; iter < iterations; iter++) {
+          const newPoints = [smoothed[0]]; // Keep first point
+          
+          for (let i = 0; i < smoothed.length - 1; i++) {
+            const p1 = smoothed[i];
+            const p2 = smoothed[i + 1];
+            
+            // Create two new points at 1/4 and 3/4 along the line segment
+            const q = [
+              p1[0] * 0.75 + p2[0] * 0.25,
+              p1[1] * 0.75 + p2[1] * 0.25
+            ];
+            const r = [
+              p1[0] * 0.25 + p2[0] * 0.75,
+              p1[1] * 0.25 + p2[1] * 0.75
+            ];
+            
+            newPoints.push(q, r);
+          }
+          
+          newPoints.push(smoothed[smoothed.length - 1]); // Keep last point
+          smoothed = newPoints;
+        }
+        
+        return smoothed;
+      }
+      
       var hash = new L.Hash(map);
 
       var sidebar = L.control.sidebar({
@@ -430,10 +464,11 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                 
                 gradientData.features.forEach((shoreline, index) => {
                     const coords = shoreline.geometry.coordinates;
-                    const colors = shoreline.properties.colors;
+                    const trends = shoreline.properties.trends;
+                    const n_points = shoreline.properties.n_points_nonan;
                     
-                    if (coords.length !== colors.length) {
-                        console.warn(`Shoreline ${index}: coordinate/color length mismatch`, coords.length, colors.length);
+                    if (!trends || coords.length !== trends.length) {
+                        console.warn(`Shoreline ${index}: coordinate/trend length mismatch or missing trends`, coords.length, trends ? trends.length : 'no trends');
                         return;
                     }
                     
@@ -442,21 +477,65 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                         if (coord[0] < 0) coord[0] += 360;
                     });
                     
-                    // Convert coordinates to Leaflet format [lat, lng]
-                    const latLngs = coords.map(coord => [coord[1], coord[0]]);
+                    // Convert coordinates to Leaflet format [lat, lng] and apply smoothing
+                    let latLngs = coords.map(coord => [coord[1], coord[0]]);
                     
-                    // Create polycolor line with preprocessed colors
+                    // Apply line smoothing using Chaikin's algorithm
+                    latLngs = smoothLine(latLngs, 2); // Apply 2 iterations of smoothing
+                    
+                    // Generate colors using the same chroma.js scale as transects
+                    const colors = trends.map((trend, i) => {
+                        const nPoints = n_points[i] || 0;
+                        
+                        // Handle insufficient data points (gray)
+                        if (nPoints < 10) {
+                            return 'rgb(186, 186, 186)';
+                        }
+                        
+                        // Handle null trends (gray)
+                        if (trend === null || trend === undefined) {
+                            return 'rgb(128, 128, 128)';
+                        }
+                        
+                        // Use the same color scale as transects
+                        return cmap(trend).css();
+                    });
+                    
+                    // Interpolate colors for smoothed coordinates if needed
+                    let finalColors = colors;
+                    if (latLngs.length !== colors.length) {
+                        // Simple interpolation for smoothed coordinates
+                        finalColors = [];
+                        for (let i = 0; i < latLngs.length; i++) {
+                            const ratio = (i / (latLngs.length - 1)) * (colors.length - 1);
+                            const colorIndex = Math.floor(ratio);
+                            const nextColorIndex = Math.min(colorIndex + 1, colors.length - 1);
+                            
+                            if (colorIndex === nextColorIndex) {
+                                finalColors.push(colors[colorIndex]);
+                            } else {
+                                // Simple color interpolation using chroma.js
+                                const t = ratio - colorIndex;
+                                const interpolatedColor = chroma.mix(colors[colorIndex], colors[nextColorIndex], t).css();
+                                finalColors.push(interpolatedColor);
+                            }
+                        }
+                    }
+                    
+                    // Create polycolor line with recalculated colors
                     const polycolorLine = L.polycolor(latLngs, {
-                        colors: colors,
-                        weight: 3,
-                        opacity: 0.8,
-                        useGradient: true
+                        colors: finalColors,
+                        weight: 5,          // Increased from 3 to 5 for better visibility
+                        opacity: 0.9,      // Increased from 0.8 to 0.9 for better visibility
+                        useGradient: true,
+                        lineCap: 'round',   // Smooth line endings
+                        lineJoin: 'round'   // Smooth line joints
                     }).addTo(map);
 
                     // Add hover and click events
                     polycolorLine.on("mouseover", function () {
                       this.setStyle({
-                        weight: 8,
+                        weight: 10,        // Increased hover weight for better visibility
                         opacity: 1.0
                       });
                       this.bringToFront();
@@ -464,8 +543,8 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                     
                     polycolorLine.on("mouseout", function () {
                       this.setStyle({
-                        weight: 4,
-                        opacity: 0.7
+                        weight: 5,         // Return to enhanced default weight
+                        opacity: 0.9      // Return to enhanced default opacity
                       });
                     });
                     

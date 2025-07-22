@@ -321,12 +321,22 @@ def process_shoreline_gradients_fast():
         if len(intersections) > 1:
             gradient_coords = []
             gradient_colors = []
+            gradient_trends = []
+            gradient_n_points = []
             
             for intersection in intersections:
                 coord = point_on_line_at_distance(shoreline_coords, intersection['distance'])
                 if coord:
                     gradient_coords.append(coord)
                     gradient_colors.append(intersection['color'])
+                    gradient_trends.append(intersection['trend'])
+                    # Extract n_points_nonan from the transect data
+                    transect_data = None
+                    for t in transects['features']:
+                        if t['properties'].get('id') == intersection['transect_id']:
+                            transect_data = t['properties']
+                            break
+                    gradient_n_points.append(transect_data.get('n_points_nonan', 0) if transect_data else 0)
             
             if len(gradient_coords) > 1:
                 # Preserve original shoreline properties
@@ -341,6 +351,8 @@ def process_shoreline_gradients_fast():
                     'properties': {
                         **original_props,  # Include all original properties
                         'colors': gradient_colors,
+                        'trends': gradient_trends,
+                        'n_points_nonan': gradient_n_points,
                         'original_length': shoreline_length,
                         'intersection_count': len(intersections),
                         'transect_ids': [i['transect_id'] for i in intersections]
