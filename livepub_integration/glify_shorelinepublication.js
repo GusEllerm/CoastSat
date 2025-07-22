@@ -1,3 +1,8 @@
+// Dynamically select API endpoint based on hostname
+const SHORELINEPUB_API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? `${location.protocol}//localhost:8766`
+  : `${location.protocol}//coastsat.livepublication.org/shorelineapi`;
+
 window.initShorelinePopup = function (feature, layer, map, e) {
   const container = L.DomUtil.create("div", "shoreline-popup-container");
   container.innerHTML = `
@@ -25,7 +30,7 @@ window.initShorelinePopup = function (feature, layer, map, e) {
     geometry: feature.geometry
   };
 
-  fetch("http://localhost:8766/request", {
+  fetch(`${SHORELINEPUB_API_BASE}/request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -40,7 +45,7 @@ window.initShorelinePopup = function (feature, layer, map, e) {
       let attempts = 0;
       
       const checkPublicationReady = () => {
-        const publication_url = `http://localhost:8766/tmp/${filename}`;
+        const publication_url = `${SHORELINEPUB_API_BASE}/tmp/${filename}`;
         fetch(publication_url, { method: 'HEAD' })
           .then(res => {
             if (res.ok) {
@@ -66,7 +71,7 @@ window.initShorelinePopup = function (feature, layer, map, e) {
               // Set up cleanup on popup close
               popup.on("remove", () => {
                 console.log(`🗑️ Cleaning up publication: ${filename}`);
-                fetch(`http://localhost:8766/delete/${filename}`, { method: "DELETE" })
+                fetch(`${SHORELINEPUB_API_BASE}/delete/${filename}`, { method: "DELETE" })
                   .catch(err => console.warn("Cleanup warning:", err));
               });
               
