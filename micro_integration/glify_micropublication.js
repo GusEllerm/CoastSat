@@ -18,10 +18,23 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
   </div>`;
   container.innerHTML = tabs;
 
-  window.popup = L.popup({ minWidth: 800 })
+  window.popup = L.popup({
+    minWidth: 800,
+    autoPan: false
+  })
     .setContent(container)
     .setLatLng(e.latlng)
     .addTo(map);
+
+  // Center the map view on the popup
+  setTimeout(() => {
+    const px = map.project(e.latlng, map.getZoom());
+    const containerSize = map.getSize();
+    px.y -= containerSize.y / 2 - 200; // Adjust vertical offset as needed
+    px.x -= containerSize.x / 2;
+    const newCenter = map.unproject(px, map.getZoom());
+    map.panTo(newCenter, { animate: true });
+  }, 0);
 
   fetch(`${MICROPUB_API_BASE}/request`, {
     method: 'POST',
