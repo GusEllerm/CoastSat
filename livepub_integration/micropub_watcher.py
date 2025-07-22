@@ -17,8 +17,8 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
-REQUESTS_DIR = os.path.join(BASE_DIR, "requests")
-TMP_DIR = os.path.join(BASE_DIR, "tmp")
+REQUESTS_DIR = os.path.join(BASE_DIR, "micropub_requests")
+TMP_DIR = os.path.join(BASE_DIR, "micropub_tmp")
 TEMPLATE_SMD = os.path.join(BASE_DIR, "micropub_templates", "base_template.smd")
 
 # GitHub info
@@ -51,16 +51,39 @@ def run_stencila_pipeline(p_id, unique_id):
     base = os.path.join(TMP_DIR, unique_id)
     try:
         print("🧪 Running Stencila pipeline...")
+        print(f"📁 TMP_DIR: {TMP_DIR}")
+        print(f"🎯 Target base path: {base}")
+        print(f"📦 PUBLICATION_CRATE: {PUBLICATION_CRATE}")
+        print(f"📋 Publication crate exists: {os.path.exists(PUBLICATION_CRATE)}")
+        
         final_path = f"{base}.html"
+        print(f"📄 Final HTML path: {final_path}")
+        
+        # Check if the micropublication_logic.py exists
+        logic_script = os.path.join(PUBLICATION_CRATE, "micropublication_logic.py")
+        print(f"🐍 Logic script path: {logic_script}")
+        print(f"🐍 Logic script exists: {os.path.exists(logic_script)}")
+        
+        if not os.path.exists(PUBLICATION_CRATE):
+            print("❌ Publication crate directory not found!")
+            return None
+            
+        if not os.path.exists(logic_script):
+            print("❌ micropublication_logic.py not found in crate!")
+            return None
+        
+        print(f"▶️ Running command: python {logic_script} {p_id} --output {final_path}")
+        
         subprocess.run([
             "python",
-            os.path.join(PUBLICATION_CRATE, "micropublication_logic.py"),
+            logic_script,
             p_id,
             "--output",
             final_path
         ], check=True)
+        
         if os.path.exists(final_path):
-            print(f"✅ Micropublication generated: tmp/{unique_id}.html")
+            print(f"✅ Micropublication generated: micropub_tmp/{unique_id}.html")
             print(f"🌐 Accessible at: http://localhost:8765/tmp/{unique_id}.html")
             return f"{unique_id}.html"
         else:
@@ -69,26 +92,40 @@ def run_stencila_pipeline(p_id, unique_id):
     except subprocess.CalledProcessError as e:
         print(f"❌ Error in Stencila pipeline for {p_id}: {e}")
         return None
+    except Exception as e:
+        print(f"❌ Unexpected error in pipeline: {e}")
+        return None
 
 @app.route("/request", methods=["POST", "OPTIONS"])
 def handle_request():
     """
     Accepts a POST request with JSON body {"id": "..."} and writes a new request file
-    to livepub_integration/requests/ to trigger the watcher.
+    to livepub_integration/micropub_requests/ to trigger the watcher.
     """
     if request.method == "OPTIONS":
         return '', 204  # Preflight response
 
     data = request.get_json()
+    print(f"📨 Received request data: {data}")
+    
     p_id = data.get("id")
     if not p_id:
+        print("❌ Missing 'id' field in request")
         return jsonify({"error": "Missing 'id' field"}), 400
 
+    print(f"🆔 Processing micropublication request for ID: {p_id}")
+    
     unique_id = f"{p_id}_{uuid.uuid4().hex}"
+    print(f"🔗 Generated unique_id: {unique_id}")
+    
     filename = run_stencila_pipeline(p_id, unique_id)
+    print(f"📄 Pipeline returned filename: {filename}")
+    
     if filename:
+        print(f"✅ Successfully generated micropublication: {filename}")
         return jsonify({"filename": filename}), 200
     else:
+        print("❌ Pipeline failed to generate micropublication")
         return jsonify({"error": "Failed to generate micropublication"}), 500
 
 
@@ -96,7 +133,7 @@ def handle_request():
 @app.route("/tmp/<path:filename>")
 def serve_tmp_file(filename):
     """
-    Serves generated HTML files from the tmp/ directory.
+    Serves generated HTML files from the micropub_tmp/ directory.
     """
     return send_from_directory(TMP_DIR, filename)
 
@@ -104,7 +141,7 @@ def serve_tmp_file(filename):
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete_tmp_file(filename):
     """
-    Deletes a specified HTML file and its associated intermediate files from the tmp/ directory.
+    Deletes a specified HTML file and its associated intermediate files from the micropub_tmp/ directory.
     """
     html_path = os.path.join(TMP_DIR, filename)
     base_name = filename.replace(".html", "")

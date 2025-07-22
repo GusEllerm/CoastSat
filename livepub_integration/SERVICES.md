@@ -9,7 +9,8 @@ This directory contains microservices for integrating dynamic publications with 
 - **Endpoints**: `/request`, `/tmp/<filename>`, `/delete/<filename>`
 - **Crate**: Downloads from `GusEllerm/CoastSat-micropublication`
 - **Local Crate**: `micropub_publication.crate/`
-- **Temp Dir**: `tmp/`
+- **Temp Dir**: `micropub_tmp/`
+- **Requests Dir**: `micropub_requests/`
 - **Purpose**: Handles transect-level micropublications
 
 ### Shoreline Publication Service (`shorelinepub_watcher.py`)
@@ -18,6 +19,7 @@ This directory contains microservices for integrating dynamic publications with 
 - **Crate**: Downloads from `GusEllerm/CoastSat-shorelinepublication`
 - **Local Crate**: `shorelinepub_publication.crate/`
 - **Temp Dir**: `shoreline_tmp/`
+- **Requests Dir**: `shoreline_requests/`
 - **Purpose**: Handles site-level comprehensive publications
 
 ## Service Isolation
