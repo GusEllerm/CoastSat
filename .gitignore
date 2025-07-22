@@ -6,6 +6,7 @@ data/*/*
 __pycache__/
 animations
 .env
+.DS_Store
 
 # Allow
 !data/*/*.csv
