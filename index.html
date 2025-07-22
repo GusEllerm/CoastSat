@@ -176,6 +176,13 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
               <span class="slider round"></span>
             </label>
           </div>
+          <div style="margin-top: 10px;" id="transectToggleContainer" style="display: none;">
+            <label for="transectToggle" style="display: inline-block; margin-right: 10px;"><strong>Show Transect Lines</strong></label>
+            <label class="switch">
+              <input type="checkbox" id="transectToggle">
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -293,6 +300,9 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       }
       window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") === "true";
       console.log("Set ENABLE_LIVEPUBLICATIONS to:", window.ENABLE_LIVEPUBLICATIONS);
+      
+      // Initialize transect visibility state
+      window.SHOW_TRANSECTS = !window.ENABLE_LIVEPUBLICATIONS; // Default to false when micropublications are enabled, true otherwise
 
       // Define loadShorelineGradients immediately if micropublications are enabled
       if (window.ENABLE_LIVEPUBLICATIONS) {
@@ -330,7 +340,7 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                         opacity: 0.8,
                         useGradient: true
                     }).addTo(map);
-                    
+
                     // Add hover and click events
                     polycolorLine.on("mouseover", function () {
                       this.setStyle({
@@ -371,21 +381,21 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       });
       L.control.layers(baseMaps, overlays, { position: "topleft" }).addTo(map);
 
-      var layers = [null, "Medium", "High"]
+      window.layers = [null, "Medium", "High"]
       map.on("overlayadd", function (e) {
         if (!window.data) return;
-        layers.push(e.name.replace(" erodibility", ""));
-        console.log(layers)
-        var filtered_data = window.data.features.filter(f => layers.includes(f.properties.ERODIBILITY))
+        window.layers.push(e.name.replace(" erodibility", ""));
+        console.log(window.layers)
+        var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY))
         console.log(filtered_data)
         plotData({ type: "FeatureCollection", features: filtered_data })
       }).on("overlayremove", function (e) {
         if (!window.data) return;
         var name = e.name.replace(" erodibility", "")
-        if (layers.indexOf(name) !== -1) {
-          layers.splice(layers.indexOf(name), 1);
-          console.log(layers)
-          var filtered_data = window.data.features.filter(f => layers.includes(f.properties.ERODIBILITY))
+        if (window.layers.indexOf(name) !== -1) {
+          window.layers.splice(window.layers.indexOf(name), 1);
+          console.log(window.layers)
+          var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY))
           console.log(filtered_data)
           plotData({ type: "FeatureCollection", features: filtered_data })
         }
@@ -402,67 +412,70 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           window.linesLayer.remove()
           window.pointsLayer.remove()
         }
-        window.pointsLayer = L.glify.points({
-          map: map,
-          data: geojson.features.map(f => [f.geometry.coordinates[0][0], f.geometry.coordinates[0][1]]),
-          size: 20,
-          color: {r: .5, g: .5, b: .5},
-        })
-        window.linesLayer = L.glify.lines({
-          map: map,
-          data: geojson,
-          color: function (index, feature) {
-            if (feature.properties.n_points_nonan < 10) {
-              return { r: 0.729, g: 0.729, b: 0.729 }
-            }
-            var c = cmap(feature.properties.trend).gl()
-            return { r: c[0], g: c[1], b: c[2] };
-          },
-          click: function (e, feature) {
-            $("#plot").remove()
-            if (window.popup) map.closePopup(window.popup)
-            var p = feature.properties
-            var g = feature.geometry.coordinates
-            var download = ""
-            if (p.site_id.startsWith("nzd")) {
-              var url = `data/${p.site_id}/transect_time_series_tidally_corrected.csv`
-              download = `<a href="data/${p.site_id}/${p.site_id}.xlsx" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
-            } else if (p.site_id.startsWith("sar")) {
-              var url = `data/${p.site_id}/transect_time_series_smoothed.csv`
-              download = `<a href="data/${p.site_id}/transect_time_series_despiked.csv" target="_blank" class="link">Download raw time series for ${p.site_id}</a><br>
-                <a href="${url}" target="_blank" class="link">Download smoothed time series for ${p.site_id}</a><br>`
-            } else {
-              var url = `csv_run7/${p.site_id}/time_series_tidally_corrected.csv`
-              download = `<a href="${url}" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
-            }
+        
+        // Only show transects if SHOW_TRANSECTS is true
+        if (window.SHOW_TRANSECTS) {
+          window.pointsLayer = L.glify.points({
+            map: map,
+            data: geojson.features.map(f => [f.geometry.coordinates[0][0], f.geometry.coordinates[0][1]]),
+            size: 20,
+            color: {r: .5, g: .5, b: .5},
+          })
+          window.linesLayer = L.glify.lines({
+            map: map,
+            data: geojson,
+            color: function (index, feature) {
+              if (feature.properties.n_points_nonan < 10) {
+                return { r: 0.729, g: 0.729, b: 0.729 }
+              }
+              var c = cmap(feature.properties.trend).gl()
+              return { r: c[0], g: c[1], b: c[2] };
+            },
+            click: function (e, feature) {
+              $("#plot").remove()
+              if (window.popup) map.closePopup(window.popup)
+              var p = feature.properties
+              var g = feature.geometry.coordinates
+              var download = ""
+              if (p.site_id.startsWith("nzd")) {
+                var url = `data/${p.site_id}/transect_time_series_tidally_corrected.csv`
+                download = `<a href="data/${p.site_id}/${p.site_id}.xlsx" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
+              } else if (p.site_id.startsWith("sar")) {
+                var url = `data/${p.site_id}/transect_time_series_smoothed.csv`
+                download = `<a href="data/${p.site_id}/transect_time_series_despiked.csv" target="_blank" class="link">Download raw time series for ${p.site_id}</a><br>
+                  <a href="${url}" target="_blank" class="link">Download smoothed time series for ${p.site_id}</a><br>`
+              } else {
+                var url = `csv_run7/${p.site_id}/time_series_tidally_corrected.csv`
+                download = `<a href="${url}" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
+              }
 
-            if (window.ENABLE_LIVEPUBLICATIONS) {
-              initMicropublicationPopup(p, g, e, url, window.map, download, debug);
-            }
-            else {
-              window.popup = L.popup({ minWidth: 800 })
-                .setContent(`
-                    <b>${p.id}</b><br>
-                    along_dist: ${p.along_dist?.toFixed(2)}<br>
-                    along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
-                    origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
-                    destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
-                    beach_slope: ${p.beach_slope}<br>
-                    n_points: ${p.n_points}<br>
-                    n_points_nonan: ${p.n_points_nonan}<br>
-                    orientation: ${p.orientation?.toFixed(2)}<br>
-                    trend: ${p.trend?.toFixed(2)} m/year<br>
-                    R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
-                    mae: ${p.mae?.toFixed(2)}<br>
-                    mse: ${p.mse?.toFixed(2)}<br>
-                    rmse: ${p.rmse?.toFixed(2)}<br>
-                    site: ${p.site_id}<br>
-                    ${download}
-                    ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
-                    <div id="plot"></div>
-                  `)
-                .setLatLng(e.latlng)
-                .addTo(map);
+              if (window.ENABLE_LIVEPUBLICATIONS) {
+                initMicropublicationPopup(p, g, e, url, window.map, download, debug);
+              }
+              else {
+                window.popup = L.popup({ minWidth: 800 })
+                  .setContent(`
+                      <b>${p.id}</b><br>
+                      along_dist: ${p.along_dist?.toFixed(2)}<br>
+                      along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
+                      origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
+                      destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
+                      beach_slope: ${p.beach_slope}<br>
+                      n_points: ${p.n_points}<br>
+                      n_points_nonan: ${p.n_points_nonan}<br>
+                      orientation: ${p.orientation?.toFixed(2)}<br>
+                      trend: ${p.trend?.toFixed(2)} m/year<br>
+                      R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
+                      mae: ${p.mae?.toFixed(2)}<br>
+                      mse: ${p.mse?.toFixed(2)}<br>
+                      rmse: ${p.rmse?.toFixed(2)}<br>
+                      site: ${p.site_id}<br>
+                      ${download}
+                      ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
+                      <div id="plot"></div>
+                    `)
+                  .setLatLng(e.latlng)
+                  .addTo(map);
               Papa.parse(url, {
                 download: true,
                 header: true,
@@ -525,6 +538,10 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           },
           sensitivity: .0001
         });
+        } else {
+          // When transects are hidden, we still need to store the data but not display the layers
+          console.log("Transects hidden - data loaded but not displayed");
+        }
       }
 
       map.spin(true);
@@ -556,7 +573,7 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         }
         window.data = geojson
         L.glify.longitudeFirst()
-        var filtered_data = window.data.features.filter(f => layers.includes(f.properties.ERODIBILITY))
+        var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY))
         console.log(filtered_data)
         plotData({ type: "FeatureCollection", features: filtered_data })
         
@@ -627,6 +644,30 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         }
         window.location.href = url.toString();
       });
+    }
+
+    // Handle transect toggle visibility and functionality
+    const transectToggleContainer = document.getElementById("transectToggleContainer");
+    const transectToggle = document.getElementById("transectToggle");
+    
+    if (window.ENABLE_LIVEPUBLICATIONS) {
+      // Show the transect toggle when micropublications are enabled
+      transectToggleContainer.style.display = "block";
+      transectToggle.checked = window.SHOW_TRANSECTS;
+      
+      transectToggle.addEventListener("change", function () {
+        window.SHOW_TRANSECTS = this.checked;
+        console.log("Transect visibility changed to:", window.SHOW_TRANSECTS);
+        
+        // Re-render the current data with new transect visibility
+        if (window.data) {
+          var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
+          plotData({ type: "FeatureCollection", features: filtered_data });
+        }
+      });
+    } else {
+      // Hide the transect toggle when micropublications are disabled
+      transectToggleContainer.style.display = "none";
     }
   </script>
 </body>
