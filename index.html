@@ -26,6 +26,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"
     integrity="sha512-zInFF17qBFVvvvFpIfeBzo7Tj7+rQxLeTJDmbxjBz5/zIr89YVbTNelNhdTT+/DCrxoVzBeUPVFJsczKbB7sew=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/gh/Oliv/leaflet-polycolor@master/dist/leaflet-polycolor.min.js"></script>
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="
 https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/js/leaflet-sidebar.min.js
@@ -183,8 +184,14 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       window.map = L.map('map', {
         center: [-42, 172],
         zoom: 6,
+        preferCanvas: true
         //worldCopyJump: true
       })
+      
+      // Initialize leaflet-polycolor plugin
+      if (typeof window.leafletPolycolor !== 'undefined') {
+        window.leafletPolycolor(L);
+      }
       var hash = new L.Hash(map);
 
       var sidebar = L.control.sidebar({
@@ -279,70 +286,98 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         "High erodibility": L.layerGroup().addTo(map)
       }
 
-      window.addEventListener("DOMContentLoaded", () => {
-        if (window.ENABLE_LIVEPUBLICATIONS) {
-          console.log("Enabling micropublications")
-          fetch("shorelines.geojson")
+      // Set the global toggle flag for micropublications BEFORE DOMContentLoaded
+      function getURLParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      }
+      window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") === "true";
+      console.log("Set ENABLE_LIVEPUBLICATIONS to:", window.ENABLE_LIVEPUBLICATIONS);
+
+      // Define loadShorelineGradients immediately if micropublications are enabled
+      if (window.ENABLE_LIVEPUBLICATIONS) {
+        console.log("Defining loadShorelineGradients function immediately");
+        
+        window.loadShorelineGradients = function() {
+          console.log("Loading preprocessed shoreline gradients...");
+          
+          fetch('shorelines_with_gradients.geojson')
             .then(response => {
-              if (!response.ok) {
-                console.error("Failed to load shorelines.geojson:", response.statusText);
-                return null;
-              }
-              return response.json();
-            })
-            .then(data => {
-              if (!data) {
-                console.warn("No data returned from shorelines.geojson");
-                return;
-              }
-
-              console.log("shorelines.geojson loaded successfully.");
-              console.log("Number of features:", data.features.length);
-
-              shorelines_trends = L.geoJSON(data, {
-                style: function (feature) {
-                  return {
-                    color: "blue",
-                    weight: 4,
-                    opacity: 0.7,
-                    lineJoin: "round", 
-                    lineCap: "round"
-                  };
-                },
-                onEachFeature: function (feature, layer) {
-                  // Add hover effect
-                  layer.on("mouseover", function () {
-                    this.setStyle({
-                      weight: 8,
-                      color: "#00bfff" // light blue highlight
-                    });
-                    this.bringToFront(); // ensures it appears above other layers
-                  });
-                  layer.on("mouseout", function () {
-                    this.setStyle({
-                      weight: 4,
-                      color: "blue"
-                    });
-                  });
-                  layer.on("click", function (e) {
-                    if (window.ENABLE_LIVEPUBLICATIONS && window.initShorelinePopup) {
-                      window.initShorelinePopup(feature, layer, map, e);
-                    }
-                  });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-              });
-
-              // --- SHORELINES LAYER ALWAYS VISIBLE ---
-              shorelines_trends = L.featureGroup([shorelines_trends]);
-
-              // Add shorelines layer to map (always visible regardless of zoom level)
-              map.addLayer(shorelines_trends);
+                return response.json();
+            })
+            .then(gradientData => {
+                console.log("Gradient data loaded:", gradientData.features.length, "shorelines with gradients");
+                
+                gradientData.features.forEach((shoreline, index) => {
+                    const coords = shoreline.geometry.coordinates;
+                    const colors = shoreline.properties.colors;
+                    
+                    if (coords.length !== colors.length) {
+                        console.warn(`Shoreline ${index}: coordinate/color length mismatch`, coords.length, colors.length);
+                        return;
+                    }
+                    
+                    // Convert coordinates to Leaflet format [lat, lng]
+                    const latLngs = coords.map(coord => [coord[1], coord[0]]);
+                    
+                    // Create polycolor line with preprocessed colors
+                    const polycolorLine = L.polycolor(latLngs, {
+                        colors: colors,
+                        weight: 3,
+                        opacity: 0.8,
+                        useGradient: true
+                    }).addTo(map);
+                    
+                    // Add hover popup with statistics
+                    polycolorLine.bindPopup(`
+                        <strong>Shoreline Gradient</strong><br>
+                        Intersections: ${shoreline.properties.intersection_count}<br>
+                        Original Length: ${shoreline.properties.original_length.toFixed(1)} units<br>
+                        Gradient Points: ${coords.length}<br>
+                        Transects: ${shoreline.properties.transect_ids.slice(0, 3).join(', ')}${shoreline.properties.transect_ids.length > 3 ? '...' : ''}
+                    `);
+                    
+                    // Add hover and click events
+                    polycolorLine.on("mouseover", function () {
+                      this.setStyle({
+                        weight: 8,
+                        opacity: 1.0
+                      });
+                      this.bringToFront();
+                    });
+                    
+                    polycolorLine.on("mouseout", function () {
+                      this.setStyle({
+                        weight: 4,
+                        opacity: 0.7
+                      });
+                    });
+                    
+                    polycolorLine.on("click", function (e) {
+                      if (window.ENABLE_LIVEPUBLICATIONS && window.initShorelinePopup) {
+                        window.initShorelinePopup(shoreline, this, map, e);
+                      }
+                    });
+                });
+                
+                console.log("Shoreline gradients loaded successfully!");
             })
             .catch(error => {
-              console.error("Error loading or parsing shorelines.geojson:", error);
+                console.error("Error loading gradient data:", error);
+                console.log("Gradient file not found, gradients will not be displayed");
             });
-          }
-        });
+        };
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        console.log("DOMContentLoaded, ENABLE_LIVEPUBLICATIONS:", window.ENABLE_LIVEPUBLICATIONS);
+        if (window.ENABLE_LIVEPUBLICATIONS) {
+          console.log("Micropublications already enabled, function already defined");
+        }
+      });
       L.control.layers(baseMaps, overlays, { position: "topleft" }).addTo(map);
 
       var layers = [null, "Medium", "High"]
@@ -533,6 +568,17 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         var filtered_data = window.data.features.filter(f => layers.includes(f.properties.ERODIBILITY))
         console.log(filtered_data)
         plotData({ type: "FeatureCollection", features: filtered_data })
+        
+        // Load shoreline gradients now that transect data is available
+        console.log("Checking if loadShorelineGradients exists:", !!window.loadShorelineGradients);
+        console.log("ENABLE_LIVEPUBLICATIONS:", window.ENABLE_LIVEPUBLICATIONS);
+        if (window.loadShorelineGradients) {
+          console.log("Loading shoreline gradients with transect data");
+          window.loadShorelineGradients();
+        } else {
+          console.log("loadShorelineGradients function not available");
+        }
+        
         map.spin(false);
       });
 
@@ -567,14 +613,6 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
     </script>
 </script>
   <script>
-    function getURLParameter(name) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
-    }
-
-    // Set the global toggle flag for micropublications
-    window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") === "true";
-
     if (window.ENABLE_LIVEPUBLICATIONS) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
