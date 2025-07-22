@@ -647,19 +647,19 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                 window.popup = L.popup({ minWidth: 800 })
                   .setContent(`
                       <b>${p.id}</b><br>
-                      along_dist: ${p.along_dist?.toFixed(2)}<br>
-                      along_dist_norm: ${p.along_dist_norm?.toFixed(2)}<br>
+                      along_dist: ${p.along_dist?.toFixed(2) ?? 'N/A'}<br>
+                      along_dist_norm: ${p.along_dist_norm?.toFixed(2) ?? 'N/A'}<br>
                       origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
                       destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
-                      beach_slope: ${p.beach_slope}<br>
-                      n_points: ${p.n_points}<br>
-                      n_points_nonan: ${p.n_points_nonan}<br>
-                      orientation: ${p.orientation?.toFixed(2)}<br>
-                      trend: ${p.trend?.toFixed(2)} m/year<br>
-                      R² score: ${p.r2_score?.toFixed(2)} ${p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : ""}<br>
-                      mae: ${p.mae?.toFixed(2)}<br>
-                      mse: ${p.mse?.toFixed(2)}<br>
-                      rmse: ${p.rmse?.toFixed(2)}<br>
+                      beach_slope: ${p.beach_slope ?? 'N/A'}<br>
+                      n_points: ${p.n_points ?? 'N/A'}<br>
+                      n_points_nonan: ${p.n_points_nonan ?? 'N/A'}<br>
+                      orientation: ${p.orientation?.toFixed(2) ?? 'N/A'}<br>
+                      trend: ${p.trend !== null ? p.trend.toFixed(2) + ' m/year' : 'N/A (insufficient data)'}<br>
+                      R² score: ${p.r2_score !== null ? p.r2_score.toFixed(2) + (p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : "") : 'N/A'}<br>
+                      mae: ${p.mae?.toFixed(2) ?? 'N/A'}<br>
+                      mse: ${p.mse?.toFixed(2) ?? 'N/A'}<br>
+                      rmse: ${p.rmse?.toFixed(2) ?? 'N/A'}<br>
                       site: ${p.site_id}<br>
                       ${download}
                       ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
@@ -684,18 +684,25 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                   var min_date = new Date(results.data[0].dates)
                   var max_date = new Date(results.data[results.data.length - 1].dates)
                   var datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25
+                  
                   var data = [{
                     type: "scatter",
                     mode: "lines+markers",
                     name: "chainage",
                     x: dates,
                     y: values,
-                  }, {
-                    type: "line",
-                    x: [min_date, max_date],
-                    y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
-                    name: "trendline"
                   }];
+                  
+                  // Only add trendline if trend and intercept are valid numbers
+                  if (p.trend !== null && p.trend !== undefined && p.intercept !== null && p.intercept !== undefined && 
+                      !isNaN(p.trend) && !isNaN(p.intercept)) {
+                    data.push({
+                      type: "line",
+                      x: [min_date, max_date],
+                      y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
+                      name: "trendline"
+                    });
+                  }
                   var layout = {
                     title: `Time series for ${p.id}`,
                     xaxis: {

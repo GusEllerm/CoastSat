@@ -4,7 +4,102 @@ const MICROPUB_API_BASE = location.hostname === 'localhost' || location.hostname
   : `${location.protocol}//coastsat.livepublication.org/micropub`;
 let lastGeneratedFilename = null;
 let popupListenerRegistered = false;
+
+// Fallback plot creation function for when micropublication data is incomplete
+function createFallbackPlot(url, p, e, map, debug) {
+  Papa.parse(url, {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      console.log(results)
+      var filtered_data = results.data.filter(d => d[p.id])
+      var dates = filtered_data.map(d => d.dates)
+      var values = filtered_data.map(d => d[p.id])
+      var satname = filtered_data.map(d => d.satname)
+      var mean = Plotly.d3.mean(values)
+      values = values.map(v => v ? v - mean : v)
+      console.log(dates, values)
+      
+      // Create plot data without trendline since trend/intercept are null
+      var data = [{
+        type: "scatter",
+        mode: "lines+markers",
+        name: "chainage",
+        x: dates,
+        y: values,
+      }];
+      
+      var layout = {
+        height: 250,
+        font: { size: 10 },
+        margin: { l: 50, r: 20, t: 10, b: 40 },
+        yaxis: {
+          title: "cross-shore change [m]",
+          hoverformat: '.1f',
+          gridcolor: '#eee'
+        },
+        xaxis: {
+          gridcolor: '#eee'
+        },
+        showlegend: false
+      };
+      Plotly.newPlot("plot", data, layout);
+      var px = map.project(e.latlng);
+      console.log(px)
+      px.y -= 400;
+      map.panTo(map.unproject(px), { animate: true });
+      if (debug) {
+        $("#plot").on('plotly_hover plotly_click', function (event, data) {
+          console.log(data)
+          var d = data.points[0].x;
+          console.log(`Hovered on ${d}`)
+          var dt = dates[data.points[0].pointIndex].replace("+00:00", "").replace(/[ :]/g, "-");
+          var sat = satname[data.points[0].pointIndex]
+          var plot_url = `https://wave.storm-surge.cloud.edu.au/CoastSat_data/${p.site_id}/jpg_files/detection/${dt}_${sat}.jpg`
+          console.log(plot_url)
+          $("#img").attr("src", plot_url);
+        })
+      }
+    }
+  });
+}
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {
+  // Check if essential data is missing - if so, fall back to original popup
+  if (p.trend === null || p.trend === undefined || p.intercept === null || p.intercept === undefined) {
+    console.warn(`Missing essential data for ${p.id}: trend=${p.trend}, intercept=${p.intercept}. Falling back to original popup.`);
+    
+    // Use the original popup content from index.html
+    window.popup = L.popup({ minWidth: 800 })
+      .setContent(`
+          <b>${p.id}</b><br>
+          along_dist: ${p.along_dist?.toFixed(2) ?? 'N/A'}<br>
+          along_dist_norm: ${p.along_dist_norm?.toFixed(2) ?? 'N/A'}<br>
+          origin point (landward): ${g[0][1].toFixed(6)},${g[0][0].toFixed(6)}<br>
+          destination point (seaward): ${g[1][1].toFixed(6)},${g[1][0].toFixed(6)}<br>
+          beach_slope: ${p.beach_slope ?? 'N/A'}<br>
+          n_points: ${p.n_points ?? 'N/A'}<br>
+          n_points_nonan: ${p.n_points_nonan ?? 'N/A'}<br>
+          orientation: ${p.orientation?.toFixed(2) ?? 'N/A'}<br>
+          trend: ${p.trend !== null ? p.trend.toFixed(2) + ' m/year' : 'N/A (insufficient data)'}<br>
+          R² score: ${p.r2_score !== null ? p.r2_score.toFixed(2) + (p.r2_score < .05 ? " score < 0.05 - linear trend might not be reliable" : "") : 'N/A'}<br>
+          mae: ${p.mae?.toFixed(2) ?? 'N/A'}<br>
+          mse: ${p.mse?.toFixed(2) ?? 'N/A'}<br>
+          rmse: ${p.rmse?.toFixed(2) ?? 'N/A'}<br>
+          site: ${p.site_id}<br>
+          ${download}
+          ${debug ? `<img id="img" style='height: 100%; width: 100%; object-fit: contain'>` : ""}
+          <div id="plot"></div>
+        `)
+      .setLatLng(e.latlng)
+      .addTo(map);
+      
+    // Still parse the CSV and create the plot even in fallback mode
+    createFallbackPlot(url, p, e, map, debug);
+    return;
+  }
+
   const container = document.createElement("div");
   const tabs = `
   <div class="popup-content">
@@ -67,6 +162,22 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
     })
     .catch(err => {
       console.error("Failed to load micropublication:", err);
+      console.warn(`Micropublication failed for ${p.id}, falling back to original popup with plot.`);
+      
+      // Clear the iframe loading indicator
+      const loadingElement = document.getElementById('iframe-loading');
+      if (loadingElement) {
+        loadingElement.style.display = "none";
+      }
+      
+      // Hide the iframe
+      const iframe = document.getElementById('debug-iframe');
+      if (iframe) {
+        iframe.style.display = "none";
+      }
+      
+      // Still create the plot even if micropublication fails
+      // (the plot container should already be in the DOM from the popup content)
     });
 
   Papa.parse(url, {
@@ -86,18 +197,25 @@ window.initMicropublicationPopup = function (p, g, e, url, map, download, debug)
       var min_date = new Date(results.data[0].dates)
       var max_date = new Date(results.data[results.data.length - 1].dates)
       var datediff = (max_date - min_date) / 1000 / 60 / 60 / 24 / 365.25
+      
       var data = [{
         type: "scatter",
         mode: "lines+markers",
         name: "chainage",
         x: dates,
         y: values,
-      }, {
-        type: "line",
-        x: [min_date, max_date],
-        y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
-        name: "trendline"
       }];
+      
+      // Only add trendline if trend and intercept are valid numbers
+      if (p.trend !== null && p.trend !== undefined && p.intercept !== null && p.intercept !== undefined && 
+          !isNaN(p.trend) && !isNaN(p.intercept)) {
+        data.push({
+          type: "line",
+          x: [min_date, max_date],
+          y: [p.intercept - mean, p.trend * datediff + p.intercept - mean],
+          name: "trendline"
+        });
+      }
       var layout = {
         height: 250,
         font: { size: 10 },
