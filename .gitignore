@@ -7,7 +7,12 @@ __pycache__/
 animations
 .env
 .DS_Store
+livepub_integration/micropub_tmp/
+livepub_integration/shoreline_tmp/
+livepub_integration/micropub_requests/
+livepub_integration/shoreline_requests/
 
 # Allow
 !data/*/*.csv
 !data/*/*.xlsx
+

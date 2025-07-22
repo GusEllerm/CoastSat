@@ -20,6 +20,10 @@ BASE_DIR = os.path.dirname(__file__)
 REQUESTS_DIR = os.path.join(BASE_DIR, "shoreline_requests")
 TMP_DIR = os.path.join(BASE_DIR, "shoreline_tmp")
 
+# Ensure required directories exist
+os.makedirs(REQUESTS_DIR, exist_ok=True)
+os.makedirs(TMP_DIR, exist_ok=True)
+
 # GitHub info
 GITHUB_REPO = "GusEllerm/CoastSat-shorelinepublication"
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"

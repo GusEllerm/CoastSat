@@ -21,6 +21,10 @@ REQUESTS_DIR = os.path.join(BASE_DIR, "micropub_requests")
 TMP_DIR = os.path.join(BASE_DIR, "micropub_tmp")
 TEMPLATE_SMD = os.path.join(BASE_DIR, "micropub_templates", "base_template.smd")
 
+# Ensure required directories exist
+os.makedirs(REQUESTS_DIR, exist_ok=True)
+os.makedirs(TMP_DIR, exist_ok=True)
+
 # GitHub info
 GITHUB_REPO = "GusEllerm/CoastSat-micropublication"
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"

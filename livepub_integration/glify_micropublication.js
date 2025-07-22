@@ -1,7 +1,7 @@
 // Dynamically select API endpoint based on hostname
 const MICROPUB_API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
   ? `${location.protocol}//localhost:8765`
-  : `${location.protocol}//coastsat.livepublication.org/api`;
+  : `${location.protocol}//coastsat.livepublication.org/micropub`;
 let lastGeneratedFilename = null;
 let popupListenerRegistered = false;
 window.initMicropublicationPopup = function (p, g, e, url, map, download, debug) {
