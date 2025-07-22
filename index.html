@@ -280,7 +280,7 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       }
 
       window.addEventListener("DOMContentLoaded", () => {
-        if (window.ENABLE_MICROPUBLICATIONS) {
+        if (window.ENABLE_LIVEPUBLICATIONS) {
           console.log("Enabling micropublications")
           fetch("shorelines.geojson")
             .then(response => {
@@ -325,34 +325,18 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                     });
                   });
                   layer.on("click", function (e) {
-                    if (window.ENABLE_MICROPUBLICATIONS && window.initShorelinePopup) {
+                    if (window.ENABLE_LIVEPUBLICATIONS && window.initShorelinePopup) {
                       window.initShorelinePopup(feature, layer, map, e);
                     }
                   });
                 }
               });
 
-              // --- SHORELINES LAYER ZOOM CONTROL ---
+              // --- SHORELINES LAYER ALWAYS VISIBLE ---
               shorelines_trends = L.featureGroup([shorelines_trends]);
 
-              let shorelineVisible = false;
-              const SHORELINE_MIN_ZOOM = 13;
-
-              if (map.getZoom() >= SHORELINE_MIN_ZOOM) {
-                map.addLayer(shorelines_trends);
-                shorelineVisible = true;
-              }
-
-              map.on("zoomend", function () {
-                const zoomLevel = map.getZoom();
-                if (zoomLevel >= SHORELINE_MIN_ZOOM && !shorelineVisible) {
-                  map.addLayer(shorelines_trends);
-                  shorelineVisible = true;
-                } else if (zoomLevel < SHORELINE_MIN_ZOOM && shorelineVisible) {
-                  map.removeLayer(shorelines_trends);
-                  shorelineVisible = false;
-                }
-              });
+              // Add shorelines layer to map (always visible regardless of zoom level)
+              map.addLayer(shorelines_trends);
             })
             .catch(error => {
               console.error("Error loading or parsing shorelines.geojson:", error);
@@ -426,7 +410,7 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
               download = `<a href="${url}" target="_blank" class="link">Download time series for ${p.site_id}</a><br>`
             }
 
-            if (window.ENABLE_MICROPUBLICATIONS) {
+            if (window.ENABLE_LIVEPUBLICATIONS) {
               initMicropublicationPopup(p, g, e, url, window.map, download, debug);
             }
             else {
@@ -589,9 +573,9 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
     }
 
     // Set the global toggle flag for micropublications
-    window.ENABLE_MICROPUBLICATIONS = getURLParameter("micro") === "true";
+    window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") === "true";
 
-    if (window.ENABLE_MICROPUBLICATIONS) {
+    if (window.ENABLE_LIVEPUBLICATIONS) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = './livepub_integration/glify_publication.css';
@@ -603,7 +587,7 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
   <script>
     const toggle = document.getElementById("microToggle");
     if (toggle) {
-      toggle.checked = window.ENABLE_MICROPUBLICATIONS;
+      toggle.checked = window.ENABLE_LIVEPUBLICATIONS;
 
       toggle.addEventListener("change", function () {
         const url = new URL(window.location.href);
