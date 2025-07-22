@@ -132,15 +132,20 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       transform: translateX(22px);
     }
 
-    /* Floating toggle controls */
+    /* Floating expandable control */
     .leaflet-control-toggles {
       background: white;
       border-radius: 4px;
       box-shadow: 0 1px 5px rgba(0,0,0,0.4);
       margin: 10px 0;
+      position: relative;
     }
 
-    .toggle-button {
+    .expandable-control {
+      position: relative;
+    }
+
+    .control-trigger {
       width: 34px;
       height: 34px;
       background: white;
@@ -152,32 +157,100 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       justify-content: center;
       font-size: 16px;
       transition: all 0.2s ease;
-      margin-bottom: 0;
+      position: relative;
+      z-index: 1000;
     }
 
-    .toggle-button:last-child {
-      margin-bottom: 0;
-    }
-
-    .toggle-button:hover {
+    .control-trigger:hover {
       background-color: #f4f4f4;
       border-color: #aaa;
     }
 
-    .toggle-button.active {
+    .control-trigger.expanded {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: none;
+      background-color: #f4f4f4;
+    }
+
+    .control-options {
+      position: absolute;
+      top: 32px;
+      left: 0;
+      background: white;
+      border: 2px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      min-width: 180px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 999;
+    }
+
+    .expandable-control:hover .control-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .expandable-control:hover .control-trigger {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: none;
+      background-color: #f4f4f4;
+    }
+
+    .control-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color 0.2s ease;
+    }
+
+    .control-option:last-child {
+      border-bottom: none;
+    }
+
+    .control-option:hover {
+      background-color: #f8f8f8;
+    }
+
+    .control-option.active {
+      background-color: #e6f3ff;
+      color: #007ACC;
+    }
+
+    .control-option .status-indicator {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .control-option.active .status-indicator {
       background-color: #007ACC;
-      border-color: #007ACC;
       color: white;
     }
 
-    .toggle-button.active:hover {
-      background-color: #005A9F;
-      border-color: #005A9F;
+    .control-option:not(.active) .status-indicator {
+      background-color: #ccc;
+      color: #666;
     }
 
-    /* Hidden transect container */
-    .toggle-button.hidden {
-      display: none;
+    .control-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .control-option.disabled:hover {
+      background-color: white;
     }
   </style>
 </head>
@@ -664,13 +737,22 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       togglesControl.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'leaflet-control-toggles');
         
-        // Create button-style toggles with symbols
+        // Create expandable control with options
         div.innerHTML = `
-          <div class="toggle-button" id="microToggle" title="Enable Micropublications">
-            📄
-          </div>
-          <div class="toggle-button" id="transectToggle" title="Show Transect Lines">
-            📏
+          <div class="expandable-control">
+            <div class="control-trigger" title="Publications & Display Options">
+              ⚙️
+            </div>
+            <div class="control-options">
+              <div class="control-option" id="livepubOption">
+                <span>Live Publications</span>
+                <span class="status-indicator">OFF</span>
+              </div>
+              <div class="control-option disabled" id="transectOption">
+                <span>Show Transects</span>
+                <span class="status-indicator">OFF</span>
+              </div>
+            </div>
           </div>
         `;
         
@@ -685,18 +767,50 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
 
       // Setup toggle event handlers after the control is added
       function setupToggleHandlers() {
-        const microToggle = document.getElementById("microToggle");
-        const transectToggle = document.getElementById("transectToggle");
+        const livepubOption = document.getElementById("livepubOption");
+        const transectOption = document.getElementById("transectOption");
         
-        if (microToggle) {
-          // Set initial state
-          if (window.ENABLE_LIVEPUBLICATIONS) {
-            microToggle.classList.add('active');
+        function updateOptionStates() {
+          // Update Live Publications option
+          if (livepubOption) {
+            if (window.ENABLE_LIVEPUBLICATIONS) {
+              livepubOption.classList.add('active');
+              livepubOption.querySelector('.status-indicator').textContent = 'ON';
+            } else {
+              livepubOption.classList.remove('active');
+              livepubOption.querySelector('.status-indicator').textContent = 'OFF';
+            }
           }
-
-          microToggle.addEventListener("click", function () {
+          
+          // Update Transects option
+          if (transectOption) {
+            if (window.ENABLE_LIVEPUBLICATIONS) {
+              // Enable transects option when live publications are enabled
+              transectOption.classList.remove('disabled');
+              
+              if (window.SHOW_TRANSECTS) {
+                transectOption.classList.add('active');
+                transectOption.querySelector('.status-indicator').textContent = 'ON';
+              } else {
+                transectOption.classList.remove('active');
+                transectOption.querySelector('.status-indicator').textContent = 'OFF';
+              }
+            } else {
+              // Disable transects option when live publications are disabled
+              transectOption.classList.add('disabled');
+              transectOption.classList.remove('active');
+              transectOption.querySelector('.status-indicator').textContent = 'OFF';
+            }
+          }
+        }
+        
+        // Set initial states
+        updateOptionStates();
+        
+        if (livepubOption) {
+          livepubOption.addEventListener("click", function () {
             const url = new URL(window.location.href);
-            if (this.classList.contains('active')) {
+            if (window.ENABLE_LIVEPUBLICATIONS) {
               url.searchParams.delete("micro");
             } else {
               url.searchParams.set("micro", "true");
@@ -705,39 +819,26 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           });
         }
 
-        if (transectToggle) {
-          // Handle transect toggle visibility and functionality
-          if (window.ENABLE_LIVEPUBLICATIONS) {
-            // Show the transect toggle when micropublications are enabled
-            transectToggle.classList.remove('hidden');
-            
-            // Set initial state
-            if (window.SHOW_TRANSECTS) {
-              transectToggle.classList.add('active');
+        if (transectOption) {
+          transectOption.addEventListener("click", function () {
+            // Only handle click if not disabled
+            if (this.classList.contains('disabled')) {
+              return;
             }
             
-            transectToggle.addEventListener("click", function () {
-              window.SHOW_TRANSECTS = !window.SHOW_TRANSECTS;
-              
-              // Toggle visual state
-              if (window.SHOW_TRANSECTS) {
-                this.classList.add('active');
-              } else {
-                this.classList.remove('active');
-              }
-              
-              console.log("Transect visibility changed to:", window.SHOW_TRANSECTS);
-              
-              // Re-render the current data with new transect visibility
-              if (window.data) {
-                var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
-                plotData({ type: "FeatureCollection", features: filtered_data });
-              }
-            });
-          } else {
-            // Hide the transect toggle when micropublications are disabled
-            transectToggle.classList.add('hidden');
-          }
+            window.SHOW_TRANSECTS = !window.SHOW_TRANSECTS;
+            
+            console.log("Transect visibility changed to:", window.SHOW_TRANSECTS);
+            
+            // Update visual state
+            updateOptionStates();
+            
+            // Re-render the current data with new transect visibility
+            if (window.data) {
+              var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
+              plotData({ type: "FeatureCollection", features: filtered_data });
+            }
+          });
         }
       }
 
