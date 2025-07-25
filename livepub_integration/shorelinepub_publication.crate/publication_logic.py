@@ -7,6 +7,116 @@ import argparse
 from pathlib import Path
 import json
 import os
+import requests
+import re
+
+def convert_to_raw_url(github_url: str) -> str:
+    """
+    Converts a GitHub blob URL to a raw.githubusercontent URL.
+    """
+    match = re.match(r"https://github\.com/(.+)/blob/([a-f0-9]+)/(.+)", github_url)
+    if not match:
+        raise ValueError("Invalid GitHub blob URL format.")
+    user_repo, commit_hash, path = match.groups()
+    return f"https://raw.githubusercontent.com/{user_repo}/{commit_hash}/{path}"
+
+def query_by_link(crate, prop, target_id, match_substring=False):
+    """
+    Return entities (dict or ContextEntity) whose `prop` links to `target_id`.
+    If `match_substring` is True, will return entities whose link includes `target_id` as a substring.
+    """
+    is_rocrate = hasattr(crate, "get_entities")
+    entities = crate.get_entities() if is_rocrate else crate.get("@graph", [])
+    out = []
+
+    for e in entities:
+        val = (e.properties().get(prop) if is_rocrate else e.get(prop))
+        if val is None:
+            continue
+        vals = [val] if not isinstance(val, list) else val
+
+        ids = [
+            (x.id if hasattr(x, "id") else x.get("@id") if isinstance(x, dict) else x)
+            for x in vals
+        ]
+        if match_substring:
+            if any(target_id in _id for _id in ids if _id is not None and isinstance(_id, str) and target_id is not None):
+                out.append(e)
+        else:
+            if target_id in ids:
+                out.append(e)
+    return out
+
+def cache_required_data(crate_root):
+    """
+    Cache required data files by downloading them if they don't exist.
+    Returns paths to the cached files.
+    """
+    cached_files = {}
+    
+    # Set up GitHub headers if token is available
+    github_token = os.environ.get('GITHUB_TOKEN')
+    headers = {}
+    if github_token:
+        headers['Authorization'] = f'token {github_token}'
+        print("Using GitHub token for API requests")
+    
+    try:
+        # Load interface.crate to get URLs
+        interface_crate_path = crate_root / "interface.crate"
+        batch_processes_crate_path = interface_crate_path / "batch_processes"
+        
+        if not interface_crate_path.exists():
+            print(f"Warning: interface.crate not found at {interface_crate_path}")
+            return cached_files
+            
+        interface_crate = ROCrate(interface_crate_path)
+        batch_processes_crate = ROCrate(batch_processes_crate_path)
+        
+        # Cache shoreline data
+        shoreline_cache_path = crate_root / "cached_shoreline.geojson"
+        if not shoreline_cache_path.exists():
+            print("Downloading shoreline data...")
+            try:
+                shoreline_entity = query_by_link(batch_processes_crate, "@id", "shorelines.geojson", match_substring=True)[0]
+                shoreline_url = shoreline_entity.get("@id")
+                response = requests.get(convert_to_raw_url(shoreline_url), headers=headers)
+                response.raise_for_status()
+                
+                with open(shoreline_cache_path, "wb") as f:
+                    f.write(response.content)
+                print(f"Cached shoreline data to {shoreline_cache_path}")
+            except Exception as e:
+                print(f"Failed to cache shoreline data: {e}")
+        else:
+            print(f"Using existing cached shoreline data: {shoreline_cache_path}")
+        
+        cached_files['shoreline'] = shoreline_cache_path
+        
+        # Cache primary result data (transects_extended)
+        primary_result_cache_path = crate_root / "cached_primary_result.geojson"
+        if not primary_result_cache_path.exists():
+            print("Downloading primary result data...")
+            try:
+                primary_result = query_by_link(interface_crate, "exampleOfWork", "#fp-transectsextended-3")[0]
+                primary_result_url = primary_result.get("@id")
+                response = requests.get(convert_to_raw_url(primary_result_url), headers=headers)
+                response.raise_for_status()
+                
+                with open(primary_result_cache_path, "wb") as f:
+                    f.write(response.content)
+                print(f"Cached primary result data to {primary_result_cache_path}")
+            except Exception as e:
+                print(f"Failed to cache primary result data: {e}")
+        else:
+            print(f"Using existing cached primary result data: {primary_result_cache_path}")
+        
+        cached_files['primary_result'] = primary_result_cache_path
+        
+    except Exception as e:
+        print(f"Error in cache_required_data: {e}")
+    
+    return cached_files
 
 def prepare_temp_directory(template_path, site_id):
     temp_dir = tempfile.TemporaryDirectory()
@@ -31,6 +141,36 @@ def prepare_temp_directory(template_path, site_id):
     else:
         # Running from parent directory (legacy)
         crate_root = script_parent / "publication.crate"
+    
+    # Cache required data files
+    print("🔍 Checking and caching required data files...")
+    cached_files = cache_required_data(crate_root)
+    
+    # Copy cached data files to temp directory
+    for data_type, cache_path in cached_files.items():
+        if cache_path and cache_path.exists():
+            if data_type == 'shoreline':
+                shutil.copy(cache_path, temp_dir_path / "cached_shoreline.geojson")
+                print(f"Copied cached shoreline data to temp directory")
+            elif data_type == 'primary_result':
+                shutil.copy(cache_path, temp_dir_path / "cached_primary_result.geojson")
+                print(f"Copied cached primary result data to temp directory")
+    
+    # Copy the narrative zoning script to temp directory
+    narrative_zoning_script = crate_root / "narrative_zoning.py"
+    if narrative_zoning_script.exists():
+        shutil.copy(narrative_zoning_script, temp_dir_path / "narrative_zoning.py")
+        print(f"Copied narrative zoning script to temp directory")
+    else:
+        print(f"Warning: narrative_zoning.py not found at {narrative_zoning_script}")
+    
+    # Copy transects file if available
+    transects_file = crate_root / "transects_extended.geojson"
+    if transects_file.exists():
+        shutil.copy(transects_file, temp_dir_path / "transects_extended.geojson")
+        print(f"Copied transects file to temp directory")
+    else:
+        print(f"Warning: transects_extended.geojson not found at {transects_file}")
     
     # Add top-level ro-crate-metadata.json
     top_level_manifest = crate_root / "ro-crate-metadata.json"
@@ -97,8 +237,8 @@ def evaluate_shorelinepublication(temp_dir_path):
         
         dnf_eval_json = f"{temp_dir_path}/DNF_eval.json"
         print(f"Rendering {dnf_json} to {dnf_eval_json}")
-        subprocess.run(["stencila", "render", dnf_json, dnf_eval_json, "--force-all", "--pretty"], check=True)
-        
+        subprocess.run(["stencila", "render", dnf_json, dnf_eval_json, "--force-all", "--pretty", "--", f"--dir={temp_dir_path}"], check=True)
+
         final_path = f"{temp_dir_path}/shorelinepublication.html"
         print(f"Converting {dnf_eval_json} to {final_path}")
         subprocess.run(["stencila", "convert", dnf_eval_json, final_path, "--pretty"], check=True)

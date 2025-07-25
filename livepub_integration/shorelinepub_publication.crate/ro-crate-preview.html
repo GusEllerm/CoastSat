@@ -14,7 +14,7 @@
       "creator": {
         "@id": "#creator"
       },
-      "datePublished": "2025-07-22T06:59:21+00:00",
+      "datePublished": "2025-07-25T00:49:10+00:00",
       "description": "This crate contains the interface.crate and a Stencila DNF document for generating publications.",
       "hasPart": [
         {
@@ -25,6 +25,9 @@
         },
         {
           "@id": "publication_logic.py"
+        },
+        {
+          "@id": "narrative_zoning.py"
         }
       ],
       "mainEntity": {
@@ -62,7 +65,7 @@
       "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
       "encodingFormat": "application/smd",
       "name": "DNF Document File",
-      "sha256": "8c9e023a5c7fc96a8017373d44c42aef2c596e1fce1ad33b93a3b8dd6d95747a",
+      "sha256": "9f73d5d11590b8ca9b56fc8b7d2fb9f46982f9158e7718774fcfdedad1df2de2",
       "@reverse": {
         "hasPart": [
           {
@@ -107,7 +110,7 @@
       "description": "Python logic for generating publications from the DNF document.",
       "encodingFormat": "text/x-python",
       "name": "Publication Logic",
-      "sha256": "e0209cb5c0ebfa640bcd88a0cf8cd004ec5ed4fc2572a8a847f8b0d64a6148ef",
+      "sha256": "ab16aa718bd0ef2368383cf083aa91d44c8c45ebc3b0270cf556723dba4e09c5",
       "@reverse": {
         "hasPart": [
           {
@@ -117,6 +120,35 @@
         "wasGeneratedBy": [
           {
             "@id": "#research-article"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "narrative_zoning.py",
+      "@type": [
+        "File",
+        "SoftwareSourceCode",
+        "SoftwareApplication"
+      ],
+      "applicationCategory": "Data Analysis",
+      "description": "Python script for analyzing shoreline transects and identifying narrative zones with similar characteristics.",
+      "encodingFormat": "text/x-python",
+      "keywords": [
+        "shoreline",
+        "coastal",
+        "narrative",
+        "zoning",
+        "transects",
+        "analysis"
+      ],
+      "name": "Narrative Zoning Analysis Script",
+      "programmingLanguage": "Python",
+      "sha256": "77d070a46946856e94e319e757d9e8855428a7ef93fa0ea1f9d1c5f44e5b8878",
+      "@reverse": {
+        "hasPart": [
+          {
+            "@id": "./"
           }
         ]
       }
@@ -146,7 +178,7 @@
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "name": "Stencila",
       "operatingSystem": "all",
-      "softwareVersion": "stencila 2.4.1",
+      "softwareVersion": "stencila 2.5.0",
       "url": "https://github.com/stencila/stencila",
       "@reverse": {
         "isBasedOn": [
@@ -165,7 +197,7 @@
       "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "name": "Stencila DNF Engine Specification",
-      "url": "https://github.com/stencila/stencila/tree/v2.4.1/schema",
+      "url": "https://github.com/stencila/stencila/tree/v2.5.0/schema",
       "@reverse": {
         "conformsTo": [
           {
@@ -242,7 +274,7 @@
         }
       ],
       "name": "LivePublication: A Dynamic and Reproducible Research Article",
-      "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-22_18-59-21",
+      "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-25_12-49-11",
       "wasGeneratedBy": [
         {
           "@id": "#dnf-presentation-environment"
@@ -331,7 +363,7 @@ table.table {
             <td style='text-align:left'><span>This crate contains the interface.crate and a Stencila DNF document for generating publications.</span></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">datePublished<span>&nbsp;</span><a href="http://schema.org/datePublished">[?]</a></th>
-            <td style='text-align:left'><span>2025-07-22T06:59:21+00:00</span></td>
+            <td style='text-align:left'><span>2025-07-25T00:49:10+00:00</span></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">creator<span>&nbsp;</span><a href="http://schema.org/creator">[?]</a></th>
             <td style='text-align:left'><a href="#%23creator">Unknown Author</a></td>
@@ -343,6 +375,8 @@ table.table {
                         <li><a href="#interface.crate/">Interface Crate</a></li>
                         
                         <li><a href="#publication_logic.py">Publication Logic</a></li>
+                        
+                        <li><a href="#narrative_zoning.py">Narrative Zoning Analysis Script</a></li>
                         </ul></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">mainEntity<span>&nbsp;</span><a href="http://schema.org/mainEntity">[?]</a></th>
@@ -418,7 +452,7 @@ table.table {
             <td style='text-align:left'><a href="#%23stencila-schema">Stencila DNF Engine Specification</a></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">sha256</th>
-            <td style='text-align:left'><span>8c9e023a5c7fc96a8017373d44c42aef2c596e1fce1ad33b93a3b8dd6d95747a</span></td>
+            <td style='text-align:left'><span>9f73d5d11590b8ca9b56fc8b7d2fb9f46982f9158e7718774fcfdedad1df2de2</span></td>
             </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
             <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
             <td style='text-align:left'><a href="#./">Publication Crate</a></td>
@@ -501,13 +535,76 @@ table.table {
             <td style='text-align:left'><span>text/x-python</span></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">sha256</th>
-            <td style='text-align:left'><span>e0209cb5c0ebfa640bcd88a0cf8cd004ec5ed4fc2572a8a847f8b0d64a6148ef</span></td>
+            <td style='text-align:left'><span>ab16aa718bd0ef2368383cf083aa91d44c8c45ebc3b0270cf556723dba4e09c5</span></td>
             </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
             <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
             <td style='text-align:left'><a href="#./">Publication Crate</a></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">wasGeneratedBy</th>
             <td style='text-align:left'><a href="#%23research-article">LivePublication: A Dynamic and Reproducible Research Article</a></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        </div>
+        <hr/><br/><br/>
+           <div>
+            <h3><a href="narrative_zoning.py">⬇️ Download: </a> Narrative Zoning Analysis Script</h3>
+            
+            
+            
+            
+        <div id="narrative_zoning.py">
+            
+            <table class="table metadata table-striped" >
+                <tbody><tr>
+            <th style="text-align:left;" class="prop">@id</th>
+            <td style='text-align:left'><span>narrative_zoning.py</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">name<span>&nbsp;</span><a href="http://schema.org/name">[?]</a></th>
+            <td style='text-align:left'><span>Narrative Zoning Analysis Script</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">@type</th>
+            <td style='text-align:left'><ul>
+                        <li><span>File</span></li>
+                        
+                        <li><span>SoftwareSourceCode</span></li>
+                        
+                        <li><span>SoftwareApplication</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">description<span>&nbsp;</span><a href="http://schema.org/description">[?]</a></th>
+            <td style='text-align:left'><span>Python script for analyzing shoreline transects and identifying narrative zones with similar characteristics.</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">encodingFormat<span>&nbsp;</span><a href="http://schema.org/encodingFormat">[?]</a></th>
+            <td style='text-align:left'><span>text/x-python</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">applicationCategory<span>&nbsp;</span><a href="http://schema.org/applicationCategory">[?]</a></th>
+            <td style='text-align:left'><span>Data Analysis</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">keywords<span>&nbsp;</span><a href="http://schema.org/keywords">[?]</a></th>
+            <td style='text-align:left'><ul>
+                        <li><span>shoreline</span></li>
+                        
+                        <li><span>coastal</span></li>
+                        
+                        <li><span>narrative</span></li>
+                        
+                        <li><span>zoning</span></li>
+                        
+                        <li><span>transects</span></li>
+                        
+                        <li><span>analysis</span></li>
+                        </ul></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">programmingLanguage<span>&nbsp;</span><a href="http://schema.org/programmingLanguage">[?]</a></th>
+            <td style='text-align:left'><span>Python</span></td>
+            </tr><tr>
+            <th style="text-align:left;" class="prop">sha256</th>
+            <td style='text-align:left'><span>77d070a46946856e94e319e757d9e8855428a7ef93fa0ea1f9d1c5f44e5b8878</span></td>
+            </tr><tr><th colspan="2" style="text-align:center">Items that reference this one</th><tr><tr>
+            <th style="text-align:left;" class="prop">hasPart<span>&nbsp;</span><a href="http://schema.org/hasPart">[?]</a></th>
+            <td style='text-align:left'><a href="#./">Publication Crate</a></td>
             </tr></tbody>
             </table>
         </div>
@@ -544,7 +641,7 @@ table.table {
                         </ul></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">url<span>&nbsp;</span><a href="http://schema.org/url">[?]</a></th>
-            <td style='text-align:left'><a href="https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-22_18-59-21">https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-22_18-59-21</a></td>
+            <td style='text-align:left'><a href="https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-25_12-49-11">https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-25_12-49-11</a></td>
             </tr><tr>
             <th style="text-align:left;" class="prop">wasGeneratedBy</th>
             <td style='text-align:left'><ul>

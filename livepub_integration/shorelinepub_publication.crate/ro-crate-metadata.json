@@ -7,7 +7,7 @@
             "creator": {
                 "@id": "#creator"
             },
-            "datePublished": "2025-07-22T06:59:21+00:00",
+            "datePublished": "2025-07-25T00:49:10+00:00",
             "description": "This crate contains the interface.crate and a Stencila DNF document for generating publications.",
             "hasPart": [
                 {
@@ -18,6 +18,9 @@
                 },
                 {
                     "@id": "publication_logic.py"
+                },
+                {
+                    "@id": "narrative_zoning.py"
                 }
             ],
             "mainEntity": {
@@ -48,7 +51,7 @@
             "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
             "encodingFormat": "application/smd",
             "name": "DNF Document File",
-            "sha256": "8c9e023a5c7fc96a8017373d44c42aef2c596e1fce1ad33b93a3b8dd6d95747a"
+            "sha256": "9f73d5d11590b8ca9b56fc8b7d2fb9f46982f9158e7718774fcfdedad1df2de2"
         },
         {
             "@id": "interface.crate/",
@@ -69,7 +72,29 @@
             "description": "Python logic for generating publications from the DNF document.",
             "encodingFormat": "text/x-python",
             "name": "Publication Logic",
-            "sha256": "e0209cb5c0ebfa640bcd88a0cf8cd004ec5ed4fc2572a8a847f8b0d64a6148ef"
+            "sha256": "ab16aa718bd0ef2368383cf083aa91d44c8c45ebc3b0270cf556723dba4e09c5"
+        },
+        {
+            "@id": "narrative_zoning.py",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "SoftwareApplication"
+            ],
+            "applicationCategory": "Data Analysis",
+            "description": "Python script for analyzing shoreline transects and identifying narrative zones with similar characteristics.",
+            "encodingFormat": "text/x-python",
+            "keywords": [
+                "shoreline",
+                "coastal",
+                "narrative",
+                "zoning",
+                "transects",
+                "analysis"
+            ],
+            "name": "Narrative Zoning Analysis Script",
+            "programmingLanguage": "Python",
+            "sha256": "77d070a46946856e94e319e757d9e8855428a7ef93fa0ea1f9d1c5f44e5b8878"
         },
         {
             "@id": "#creator",
@@ -89,7 +114,7 @@
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila",
             "operatingSystem": "all",
-            "softwareVersion": "stencila 2.4.1",
+            "softwareVersion": "stencila 2.5.0",
             "url": "https://github.com/stencila/stencila"
         },
         {
@@ -98,7 +123,7 @@
             "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila DNF Engine Specification",
-            "url": "https://github.com/stencila/stencila/tree/v2.4.1/schema"
+            "url": "https://github.com/stencila/stencila/tree/v2.5.0/schema"
         },
         {
             "@id": "#dnf-evaluated-document",
@@ -144,7 +169,7 @@
                 }
             ],
             "name": "LivePublication: A Dynamic and Reproducible Research Article",
-            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-22_18-59-21",
+            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-25_12-49-11",
             "wasGeneratedBy": [
                 {
                     "@id": "#dnf-presentation-environment"
