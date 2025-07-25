@@ -14,7 +14,8 @@ window.initShorelinePopup = function (feature, layer, map, e) {
       <div class="loading-spinner"></div>
       <div class="loading-progress">
         <div class="progress-time">
-          <span class="elapsed-time">0:00</span> / <span class="max-time">3:00</span>
+          <span>I can take a while to load, please be patient...</span>
+          <span class="elapsed-time">0:00</span>
         </div>
         <div class="progress-bar" style="width: 100%; height: 10px; background-color: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 10px; position: relative;">
           <div class="progress-fill" style="width: 0%; height: 100%; background-color: #4CAF50; position: absolute; top: 0; left: 0; transition: width 0.3s ease; -webkit-transition: width 0.3s ease;"></div>
