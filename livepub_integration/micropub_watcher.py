@@ -63,8 +63,8 @@ def run_stencila_pipeline(p_id, unique_id):
         final_path = f"{base}.html"
         print(f"📄 Final HTML path: {final_path}")
         
-        # Check if the micropublication_logic.py exists
-        logic_script = os.path.join(PUBLICATION_CRATE, "micropublication_logic.py")
+        # Check if the publication_logic.py exists
+        logic_script = os.path.join(PUBLICATION_CRATE, "publication_logic.py")
         print(f"🐍 Logic script path: {logic_script}")
         print(f"🐍 Logic script exists: {os.path.exists(logic_script)}")
         
@@ -73,7 +73,7 @@ def run_stencila_pipeline(p_id, unique_id):
             return None
             
         if not os.path.exists(logic_script):
-            print("❌ micropublication_logic.py not found in crate!")
+            print("❌ publication_logic.py not found in crate!")
             return None
         
         print(f"▶️ Running command: python {logic_script} {p_id} --output {final_path}")

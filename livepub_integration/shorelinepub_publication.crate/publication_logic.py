@@ -199,10 +199,9 @@ def evaluate_shorelinepublication(temp_dir_path):
 
     print(f"Template file: {template}")
     
-    # Debug: Show template content
+    # Read template content
     with open(template, 'r') as f:
         content = f.read()
-    print(f"Template content: '{content}'")
 
     data_json = temp_dir_path / "data.json"
     if not data_json.exists():
@@ -243,10 +242,140 @@ def evaluate_shorelinepublication(temp_dir_path):
         print(f"Converting {dnf_eval_json} to {final_path}")
         subprocess.run(["stencila", "convert", dnf_eval_json, final_path, "--pretty"], check=True)
         
-        return final_path if os.path.exists(final_path) else None
+        # Return both the final HTML and the evaluated DNF document
+        html_exists = os.path.exists(final_path)
+        dnf_eval_exists = os.path.exists(dnf_eval_json)
+        
+        if html_exists and dnf_eval_exists:
+            return final_path, dnf_eval_json
+        elif html_exists:
+            return final_path, None
+        else:
+            return None, None
     except subprocess.CalledProcessError as e:
         print(f"❌ Error in Stencila pipeline: {e}")
         return None
+
+def populate_crate_with_generated_content(crate_path, generated_html_path, site_id, dnf_eval_path=None):
+    """
+    Populate the publication crate with generated content and update metadata.
+    
+    Args:
+        crate_path: Path to the publication.crate directory
+        generated_html_path: Path to the generated HTML file
+        site_id: The site ID used for generation
+        dnf_eval_path: Optional path to the DNF evaluated document
+    """
+    print("🔧 Populating publication crate with generated content...")
+    
+    # Load the existing crate
+    crate = ROCrate(crate_path)
+    
+    # Copy the generated HTML file into the crate directory
+    # The generated file is always named shorelinepublication.html
+    html_filename = "shorelinepublication.html"
+    html_target_path = Path(crate_path) / html_filename
+    
+    # Remove existing file if it exists to avoid permission issues
+    if html_target_path.exists():
+        html_target_path.unlink()
+    
+    shutil.copy(generated_html_path, html_target_path)
+    print(f"📄 Copied generated HTML to {html_target_path}")
+    
+    # Add the HTML file to the crate metadata
+    html_file = crate.add_file(html_filename, properties={
+        "@type": ["File", "CreativeWork"],
+        "name": f"Shoreline Publication for {site_id}",
+        "description": f"Generated shoreline publication for site {site_id}",
+        "encodingFormat": "text/html"
+    })
+    
+    # Handle DNF evaluated document if provided
+    dnf_eval_file = None
+    if dnf_eval_path and os.path.exists(dnf_eval_path):
+        dnf_eval_filename = "DNF_eval.json"
+        dnf_eval_target_path = Path(crate_path) / dnf_eval_filename
+        
+        # Remove existing file if it exists to avoid permission issues
+        if dnf_eval_target_path.exists():
+            dnf_eval_target_path.unlink()
+        
+        # First copy the file to the crate directory
+        shutil.copy(dnf_eval_path, dnf_eval_target_path)
+        print(f"📄 Copied DNF evaluated document to {dnf_eval_target_path}")
+        
+        # Add the DNF evaluated document to the crate metadata
+        # ROCrate expects files to be added relative to the crate directory
+        dnf_eval_file = crate.add_file(dnf_eval_filename, properties={
+            "@type": ["File", "SoftwareSourceCode", "CreativeWork"],
+            "name": f"Evaluated DNF Document for {site_id}",
+            "description": f"Evaluated dynamic narrative document for site {site_id}",
+            "encodingFormat": "application/json"
+        })
+        
+        # Update the existing DNF evaluated document entity to reference the actual file
+        for entity in crate.get_entities():
+            if entity.id == "#dnf-evaluated-document":
+                entity["name"] = f"Evaluated DNF Document for {site_id}"
+                entity["description"] = f"Evaluated dynamic narrative document containing executed code and analysis for site {site_id}"
+                entity["hasPart"] = [dnf_eval_file]
+                
+                # Add cached data files as isBasedOn entities if they exist
+                cached_data_entities = []
+                existing_is_based_on = entity.get("isBasedOn", [])
+                if isinstance(existing_is_based_on, dict):
+                    existing_is_based_on = [existing_is_based_on]
+                elif existing_is_based_on is None:
+                    existing_is_based_on = []
+                
+                # Check for cached shoreline data
+                shoreline_cache_path = Path(crate_path) / "cached_shoreline.geojson"
+                if shoreline_cache_path.exists():
+                    shoreline_file = crate.add_file("cached_shoreline.geojson", properties={
+                        "@type": ["File", "Dataset"],
+                        "name": "Cached Shoreline Data",
+                        "description": "Downloaded shoreline data used in publication generation",
+                        "encodingFormat": "application/geo+json"
+                    })
+                    cached_data_entities.append(shoreline_file)
+                    print(f"📊 Added cached shoreline data to manifest")
+                
+                # Check for cached primary result data  
+                primary_result_cache_path = Path(crate_path) / "cached_primary_result.geojson"
+                if primary_result_cache_path.exists():
+                    primary_result_file = crate.add_file("cached_primary_result.geojson", properties={
+                        "@type": ["File", "Dataset"],
+                        "name": "Cached Primary Result Data", 
+                        "description": "Downloaded transects_extended data used in publication generation",
+                        "encodingFormat": "application/geo+json"
+                    })
+                    cached_data_entities.append(primary_result_file)
+                    print(f"📊 Added cached primary result data to manifest")
+                
+                # Combine existing isBasedOn with new cached data entities
+                entity["isBasedOn"] = existing_is_based_on + cached_data_entities
+                
+                print(f"✅ Updated DNF evaluated document entity to reference generated content for site {site_id}")
+                break
+    
+    # Update the main research article entity to reference the generated content
+    if crate.mainEntity:
+        # Update the main entity properties to point to the actual generated content
+        main_entity = crate.mainEntity
+        main_entity["name"] = f"Dynamic Shoreline Publication for Site {site_id}"
+        main_entity["description"] = f"A dynamic and reproducible research publication for CoastSat shoreline analysis data from site {site_id}"
+        main_entity["hasPart"] = [html_file]  # Include the HTML file as part of the article
+        print(f"✅ Updated main entity to reference generated content for site {site_id}")
+    
+    # Write the updated crate back to disk (change to crate directory first)
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(crate_path)
+        crate.write(".")
+        print(f"💾 Updated publication crate metadata at {crate_path}")
+    finally:
+        os.chdir(original_cwd)
 
 def get_template_path(crate_path):
     """
@@ -265,6 +394,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a shoreline publication for a given site ID.")
     parser.add_argument("site_id", help="The site ID to generate the shoreline publication for.")
     parser.add_argument("--output", help="Output file path for the generated shoreline publication HTML.", default="shorelinepublication.html")
+    parser.add_argument("--populate-crate", action="store_true", 
+                       help="Populate the publication crate with generated content and update metadata")
     args = parser.parse_args()
 
     print("🔍 Getting template path...")
@@ -290,11 +421,19 @@ if __name__ == "__main__":
     print(f"🔍 Preparing publication for site ID: {args.site_id}")
 
     temp_dir_obj, temp_dir_path = prepare_temp_directory(template_path, args.site_id)
-    publication_path = evaluate_shorelinepublication(temp_dir_path)
-    if publication_path:
+    result = evaluate_shorelinepublication(temp_dir_path)
+    
+    if result and result[0]:  # Check if we got a valid result and HTML path
+        publication_path, dnf_eval_path = result
+        assert publication_path is not None  # Type assertion for the type checker
         output_path = args.output if hasattr(args, "output") else "shorelinepublication.html"
         shutil.copy(publication_path, output_path)
         print(f"Shoreline publication written to {output_path}")
+        
+        # If populate-crate flag is set, update the crate with generated content
+        if args.populate_crate:
+            populate_crate_with_generated_content(crate_path, output_path, args.site_id, dnf_eval_path)
+            
     else:
         print("Failed to generate shoreline publication.")
 

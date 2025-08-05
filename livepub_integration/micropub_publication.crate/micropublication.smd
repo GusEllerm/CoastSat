@@ -65,23 +65,27 @@ one_r2_theshold = 1 # R² score indicating a perfect fit
 ```python exec always
 # This block uses the coordinates to reverse geocode and get the location name
 coordinates_path = os.path.join(Path.cwd(), "coordinates.json")
-lon, lat = pd.read_json(coordinates_path, typ='series').to_dict()['coordinates'][0]
-location = requests.get(
-    url="https://nominatim.openstreetmap.org/reverse",
-    params={
-        'lat': lat,
-        'lon': lon,
-        'format': 'json',
-        'zoom': 10,
-        'addressdetails': 1
-    },
-    headers={'User-Agent': 'CoastSat-Micropublication'}
-).json().get('display_name')
+try:
+    lon, lat = pd.read_json(coordinates_path, typ='series').to_dict()['coordinates'][0]
+    response = requests.get(
+        url="https://nominatim.openstreetmap.org/reverse",
+        params={
+            'lat': lat,
+            'lon': lon,
+            'format': 'json',
+            'zoom': 10,
+            'addressdetails': 1
+        },
+        headers={'User-Agent': 'CoastSat-Micropublication'}
+    )
+    location = response.json().get('display_name', f"Location at {lat:.3f}, {lon:.3f}")
+except Exception as e:
+    location = f"Unknown location (error: {str(e)})"
 ```
 
 ```python exec always
 # Load the publication.crate, interface.crate, and batch_processes.crate manifest files
-publication_crate_path = Path.cwd() 
+publication_crate_path = Path.cwd()  # The publication crate files are copied to temp directory root
 interface_crate_path = Path.cwd() / "interface.crate" 
 batch_processes_crate_path = interface_crate_path / "batch_processes"
 

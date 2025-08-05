@@ -12,8 +12,6 @@ table {
 th, td {
     border: 1px solid #ddd;
     padding: 6px 10px !important;
-    text-align: left;
-    vertical-align: middle;
 }
 
 th {
@@ -546,6 +544,168 @@ def plot_zone_uncertainty_metrics(site_time_series_df, zone_transects, window_si
 
     # Show with responsive config
     fig.show(config={'responsive': True})
+
+# Folium map creation function
+# Create Maps which visualise transects - composable function for different use cases
+def create_transect_map(transects_data, map_title="Transects Map", use_gdf=False):
+    """
+    Create a Folium map with trend-colored transects.
+    
+    Args:
+        transects_data: Either a list of transect dicts (zone case) or GeoDataFrame (site case)
+        map_title: Title to display on the map
+        use_gdf: If True, treats transects_data as a GeoDataFrame; if False, as transect list
+    
+    Returns:
+        Folium map object
+    """
+    
+    def get_trend_color(trend, n_points=None):
+        """Get color based on trend value, matching the index.html color scheme"""
+        # Handle insufficient data points (gray)
+        if n_points is not None and n_points < 10:
+            return '#BABABA'
+        
+        # Handle null trends (gray)
+        if trend is None or pd.isna(trend):
+            return '#808080'
+        
+        # Apply the same color scale as index.html: RdYlBu with domain [-3, 3]
+        # Clamp trend values to the domain range
+        clamped_trend = max(-3, min(3, trend))
+        
+        # RdYlBu color scale interpolation (Red-Yellow-Blue)
+        # Red for negative (erosion), Yellow for ~0 (stable), Blue for positive (accretion)
+        if clamped_trend <= -2:
+            return '#d73027'  # Dark red
+        elif clamped_trend <= -1:
+            return '#f46d43'  # Red-orange
+        elif clamped_trend <= -0.5:
+            return '#fdae61'  # Orange
+        elif clamped_trend <= 0:
+            return '#fee08b'  # Light orange/yellow
+        elif clamped_trend <= 0.5:
+            return '#e6f598'  # Light green/yellow
+        elif clamped_trend <= 1:
+            return '#abdda4'  # Light blue/green
+        elif clamped_trend <= 2:
+            return '#66c2a5'  # Medium blue/green
+        else:
+            return '#3288bd'  # Blue
+
+    # Convert data to GeoDataFrame if needed
+    if use_gdf:
+        # transects_data is already a GeoDataFrame (site case)
+        gdf = transects_data.copy()
+    else:
+        # transects_data is a list of transect dicts (zone case)
+        features = []
+        for t in transects_data:
+            coords = t["geometry"]["coordinates"]
+            line = LineString(coords)
+            # Copy all properties from t["properties"], plus id and site_id at top level
+            props = dict(t.get("properties", {}))
+            props["id"] = t["id"]
+            props["site_id"] = t.get("site_id")
+            props["geometry"] = line
+            features.append(props)
+        gdf = gpd.GeoDataFrame(features, crs="EPSG:4326")
+
+    # Calculate bounds and center
+    bounds = gdf.total_bounds
+    center = [(bounds[1] + bounds[3]) / 2, (bounds[0] + bounds[2]) / 2]
+
+    # Create map
+    m = folium.Map(location=center, zoom_start=15, tiles="OpenStreetMap")
+
+    # Rounding configuration for tooltips
+    rounding_map = {
+        "orientation": ("°", 1),
+        "along_dist": ("m", 1),
+        "along_dist_norm": ("", 3),
+        "beach_slope": ("", 2),
+        "cil": ("", 3),
+        "ciu": ("", 3),
+        "trend": ("", 2),
+        "r2_score": ("", 3),
+        "mae": ("m", 1),
+        "mse": ("m²", 1),
+        "rmse": ("m", 1),
+        "intercept": ("", 1)
+    }
+
+    # Build tooltip fields and aliases
+    # Get available columns from the GeoDataFrame
+    available_cols = [col for col in gdf.columns if col not in ["geometry", "site_id"]]
+    
+    tooltip_fields = []
+    tooltip_aliases = []
+    
+    # Always include ID if available
+    if "id" in available_cols:
+        tooltip_fields.append("id")
+        tooltip_aliases.append("Transect ID:")
+    
+    # Add other available fields
+    for key in available_cols:
+        if key != "id":  # Already handled above
+            tooltip_fields.append(key)
+            alias = key.replace("_", " ").capitalize()
+            if key in rounding_map:
+                unit, _ = rounding_map[key]
+                if unit:
+                    alias += f" ({unit})"
+            tooltip_aliases.append(alias + ":")
+
+    # Style function for each feature
+    def style_function(feature):
+        props = feature['properties']
+        trend = props.get('trend')
+        n_points = props.get('n_points_nonan')
+        
+        color = get_trend_color(trend, n_points)
+        
+        return {
+            'color': color,
+            'weight': 3,
+            'opacity': 0.8
+        }
+
+    # Add GeoJSON layer with styling and tooltips
+    folium.GeoJson(
+        gdf.to_json(),
+        name="Transects",
+        style_function=style_function,
+        tooltip=folium.GeoJsonTooltip(fields=tooltip_fields, aliases=tooltip_aliases, sticky=True, localize=True)
+    ).add_to(m)
+
+    # Fit map to bounds so all transects are visible
+    m.fit_bounds([[bounds[1], bounds[0]], [bounds[3], bounds[2]]])
+    
+    # Add compact legend
+    legend_html = '''
+    <div style="position: fixed; 
+                bottom: 20px; right: 20px; width: 120px; height: auto; 
+                background-color: rgba(0, 0, 0, 0.85); border-radius: 4px; 
+                color: white; padding: 8px; font-size: 10px; z-index: 9999; line-height: 1.2;">
+        <div style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">Trend (m/yr)</div>
+        <div style="margin-bottom: 2px;"><i style="background: #3288bd; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>≥3 Accretion</div>
+        <div style="margin-bottom: 2px;"><i style="background: #66c2a5; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>2</div>
+        <div style="margin-bottom: 2px;"><i style="background: #abdda4; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>1</div>
+        <div style="margin-bottom: 2px;"><i style="background: #e6f598; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>0 Stable</div>
+        <div style="margin-bottom: 2px;"><i style="background: #fee08b; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>-1</div>
+        <div style="margin-bottom: 2px;"><i style="background: #fdae61; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>-2</div>
+        <div style="margin-bottom: 2px;"><i style="background: #d73027; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>≤-3 Erosion</div>
+        <div style="margin-bottom: 0px;"><i style="background: #BABABA; width: 12px; height: 12px; float: left; margin-right: 5px; margin-top: 1px;"></i>Uncertain</div>
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+    
+    # Add centered title
+    title_html = f'<h2 style="position:absolute;z-index:100000;left:50%;top:10px;transform:translateX(-50%);font-size:1.2em;font-weight:400;color:#444;background:rgba(255,255,255,0.7);padding:4px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">{map_title}</h2>'
+    m.get_root().html.add_child(folium.Element(title_html))
+
+    return m
 ```
 
 ```python exec
@@ -684,8 +844,6 @@ aoi_definitions =  {
         "description_template": "Stable shoreline segment showing minimal change over time. This area exhibits natural equilibrium."
     }
     }
-
-
 ```
 
 ```python exec
@@ -695,8 +853,16 @@ summary = summary.round(3)
 ```
 
 This dataset contains `len(site_primary_data)`{python exec} transects associated with the shoreline at site `site_primary_data['site_id'].iloc[0]`{python exec}. Each transect represents a segment of the coastline for which elevation and positional data have been analysed to estimate shoreline change trends and related metrics.
-
 The orientation of transects spans from `summary.loc["orientation", "min"]`{python exec}° to `summary.loc["orientation", "max"]`{python exec}°, with a mean orientation of `summary.loc["orientation", "mean"]`{python exec}°, indicating the general alignment of shoreline segments within this site.
+
+```python exec
+site_map = create_transect_map(
+    site_primary_data, 
+    map_title=f"All Transects - {site_id}", 
+    use_gdf=True
+)
+site_map
+```
 
 In terms of shoreline change:
 - The average **linear trend** across all transects is `summary.loc["trend", "mean"]`{python exec} m/year, with individual values ranging from `summary.loc["trend", "min"]`{python exec} to `summary.loc["trend", "max"]`{python exec}, suggesting a `("net erosional" if summary.loc["trend", "mean"] < 0 else "net accretional")`{python exec} trend overall.
@@ -713,7 +879,8 @@ The number of valid data points per transect (`n_points_nonan`) ranges from `sum
 > ```python exec echo
 > min_zone_length = max(3, int(len(site_primary_data) / 10))  # Minimum of 3, or len(site_primary_data)//3
 > # Get areas of interest (AOIs) for the site
-> aois = run_narrative_zoning(site_id, cached_primary_result_path, min_zone_length=min_zone_length, zone_definitions=aoi_definitions)
+> aois = run_narrative_zoning(site_id, cached_primary_result_path, min_zone_length=min_zone_length, zone_definitions=aoi_definitions, sort_by_priority=True)
+> print(aois)
 > aoi_zones = aois.get('zones', [])
 > all_transects = aois.get('transects', [])
 > ```
@@ -817,9 +984,14 @@ def extract_zone_metrics(zone):
 zone_metrics = extract_zone_metrics(zone)
 ```
 
+### Zone: `zone_metrics.zone_type`{python exec}
+
+This zone spans `zone_metrics.length_km`{python exec} km and contains `zone_metrics.transect_count`{python exec} transects, from `zone_metrics.start_transect_id`{python exec} to `zone_metrics.end_transect_id`{python exec}.
+`zone_metrics.narrative_description`{python exec}
+
 ```python exec 
-# Create Maps which visualise the sub-set of transects in this zone
 def get_zone_transects(zone_metrics, all_transects):
+    """Helper function to extract transects for a specific zone"""
     id_set = set(zone_metrics.transect_ids)
     results = []
     for tid, t in all_transects.items():
@@ -828,59 +1000,19 @@ def get_zone_transects(zone_metrics, all_transects):
             t_copy["id"] = tid
             results.append(t_copy)
     return results
-def build_transect_gdf(transects):
-    features = []
-    for t in transects:
-        coords = t["geometry"]["coordinates"]
-        line = LineString(coords)
-        features.append({
-            "id": t["id"],
-            "site_id": t.get("site_id"),
-            "geometry": line
-        })
-    return gpd.GeoDataFrame(features, crs="EPSG:4326")
 
-def save_zone_transect_map(zone_metrics, all_transects, out_path):
-    zone_transects = get_zone_transects(zone_metrics, all_transects)
-    gdf = build_transect_gdf(zone_transects)
-    ax = gdf.plot(figsize=(6, 6), linewidth=2)
-    cx.add_basemap(ax, crs="EPSG:4326")
-    ax.set_title(f"Zone: {zone_metrics.zone_type}")
-    ax.set_axis_off()
-    plt.savefig(out_path, bbox_inches="tight")
-    plt.close()
-
-def save_interactive_transect_map(gdf, filename="zone_transects_map.html"):
-    center = gdf.geometry.unary_union.centroid.coords[0][::-1]  # (lat, lon)
-    m = folium.Map(location=center, zoom_start=12, tiles="OpenStreetMap")
-
-    folium.GeoJson(
-        gdf.to_json(),
-        name="Transects",
-        tooltip=folium.GeoJsonTooltip(fields=["id", "site_id"])
-    ).add_to(m)
-
-    map_path = os.path.join(dir, "zone_transects_map.html")
-    m.save(map_path)
-    return map_path
-
-# TODO: Map stuff is waiting for integration 
-zone_transects = get_zone_transects(zone_metrics, all_transects) # Zone_transects are used for more than just the map, so we keep them
-# transect_gdf = build_transect_gdf(zone_transects)
-# map_path = save_interactive_transect_map(transect_gdf)
+# Usage for zone-specific map (current case)
+zone_transects = get_zone_transects(zone_metrics, all_transects) 
+m = create_transect_map(zone_transects, map_title=zone_metrics.zone_name, use_gdf=False)
+m
 ```
-
-<!--- ::: include zone_transects_map.html currently not working in Stencila --->
-
-### Zone: `zone_metrics.zone_type`{python exec}
-
-This zone spans `zone_metrics.length_km`{python exec} km and contains `zone_metrics.transect_count`{python exec} transects, from `zone_metrics.start_transect_id`{python exec} to `zone_metrics.end_transect_id`{python exec}.
-`zone_metrics.narrative_description`{python exec}
 
 ::::: if "nzd" in site_id
 
 <!--- conditionals for plotly graphs --->
 :::::: if (zone_metrics.zone_type in ["Moderate Erosion", "Rapid Erosion", "Moderate Accretion", "Rapid Accretion"])
+
+The figure below show the time series of shoreline position for the transects in this zone.
 
 ```python exec
 # Plot the transect time series for this zone
@@ -913,6 +1045,8 @@ Limitations of interface.crate modeling mean that SAR time serries data is not a
 ::::: else
 <!--- below is the conditional for the non-SAR, non-NZD sites -- i.e. pacific rim sites --->
 :::::: if (zone_metrics.zone_type in ["Moderate Erosion", "Rapid Erosion", "Moderate Accretion", "Rapid Accretion"])
+
+The figure below show the time series of shoreline position for the transects in this zone.
 
 ```python exec
 # Plot the transect time series for this zone

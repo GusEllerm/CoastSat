@@ -7,7 +7,7 @@
             "creator": {
                 "@id": "#creator"
             },
-            "datePublished": "2025-07-21T09:00:33+00:00",
+            "datePublished": "2025-08-05T05:57:26+00:00",
             "description": "This crate contains the interface.crate and a Stencila DNF document for generating micropublications.",
             "hasPart": [
                 {
@@ -17,7 +17,7 @@
                     "@id": "interface.crate/"
                 },
                 {
-                    "@id": "micropublication_logic.py"
+                    "@id": "publication_logic.py"
                 }
             ],
             "mainEntity": {
@@ -48,7 +48,7 @@
             "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
             "encodingFormat": "application/smd",
             "name": "DNF Document File",
-            "sha256": "0af548a7a860093ffddaa5aa7ae6ad1a302743ca6961a1293e4b570756ae0aa0"
+            "sha256": "c7c61767fb71a66dfe39651d5e747a65705026797612911f8eb7d8bbbaf150a2"
         },
         {
             "@id": "interface.crate/",
@@ -61,15 +61,15 @@
             "name": "Interface Crate"
         },
         {
-            "@id": "micropublication_logic.py",
+            "@id": "publication_logic.py",
             "@type": [
                 "File",
                 "SoftwareSourceCode"
             ],
-            "description": "Python logic for generating micropublications from the DNF document.",
+            "description": "Python logic for generating publications from the DNF document.",
             "encodingFormat": "text/x-python",
-            "name": "Micropublication Logic",
-            "sha256": "da7d7e52a634c02d61d1805197064c30e537ba6c83044394272976803316d70b"
+            "name": "Publication Logic",
+            "sha256": "aab836a94fe5825419e65990e56d9b402709a01d4a2d5403103bc482ae6297c5"
         },
         {
             "@id": "#creator",
@@ -89,7 +89,7 @@
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila",
             "operatingSystem": "all",
-            "softwareVersion": "stencila 2.4.1",
+            "softwareVersion": "stencila 2.5.1",
             "url": "https://github.com/stencila/stencila"
         },
         {
@@ -98,7 +98,7 @@
             "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila DNF Engine Specification",
-            "url": "https://github.com/stencila/stencila/tree/v2.4.1/schema"
+            "url": "https://github.com/stencila/stencila/tree/v2.5.1/schema"
         },
         {
             "@id": "#dnf-evaluated-document",
@@ -144,13 +144,13 @@
                 }
             ],
             "name": "LivePublication: A Dynamic and Reproducible Research Article",
-            "url": "https://github.com/GusEllerm/CoastSat-micropublication/releases/tag/crate-release-2025-07-21_21-00-34",
+            "url": "https://github.com/GusEllerm/CoastSat-micropublication/releases/tag/micropublication-crate-release-2025-08-05_17-57-27",
             "wasGeneratedBy": [
                 {
                     "@id": "#dnf-presentation-environment"
                 },
                 {
-                    "@id": "micropublication_logic.py"
+                    "@id": "publication_logic.py"
                 }
             ]
         }

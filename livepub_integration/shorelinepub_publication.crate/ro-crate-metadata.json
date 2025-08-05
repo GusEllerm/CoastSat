@@ -5,9 +5,9 @@
             "@id": "./",
             "@type": "Dataset",
             "creator": {
-                "@id": "#creator"
+                "@id": "https://orcid.org/0000-0001-8260-231X"
             },
-            "datePublished": "2025-07-26T06:09:52+00:00",
+            "datePublished": "2025-08-05T05:56:40+00:00",
             "description": "This crate contains the interface.crate and a Stencila DNF document for generating publications.",
             "hasPart": [
                 {
@@ -51,7 +51,7 @@
             "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
             "encodingFormat": "application/smd",
             "name": "DNF Document File",
-            "sha256": "15b9770bdbb0a96b1e98fd691bff4e400eab6f8e619671ff27aeddf012e76b92"
+            "sha256": "1d0df8a7919960b3db5b68a4cbce41f5ffaef503fd48568ab1fc710573437a4f"
         },
         {
             "@id": "interface.crate/",
@@ -71,8 +71,13 @@
             ],
             "description": "Python logic for generating publications from the DNF document.",
             "encodingFormat": "text/x-python",
+            "isBasedOn": [
+                {
+                    "@id": "narrative_zoning.py"
+                }
+            ],
             "name": "Publication Logic",
-            "sha256": "ab16aa718bd0ef2368383cf083aa91d44c8c45ebc3b0270cf556723dba4e09c5"
+            "sha256": "05c184e2e6b83d42838e70f5258e9dd52bcc6705e7703f7eae30f479cefc3c1f"
         },
         {
             "@id": "narrative_zoning.py",
@@ -94,12 +99,12 @@
             ],
             "name": "Narrative Zoning Analysis Script",
             "programmingLanguage": "Python",
-            "sha256": "77d070a46946856e94e319e757d9e8855428a7ef93fa0ea1f9d1c5f44e5b8878"
+            "sha256": "ddf83e40ee51210c8235978bc84ea1cca8f4a21a1602df21f21648634f69bffb"
         },
         {
-            "@id": "#creator",
+            "@id": "https://orcid.org/0000-0001-8260-231X",
             "@type": "Person",
-            "name": "Unknown Author"
+            "name": "Gus Ellerm"
         },
         {
             "@id": "#stencila",
@@ -114,7 +119,7 @@
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila",
             "operatingSystem": "all",
-            "softwareVersion": "stencila 2.5.0",
+            "softwareVersion": "stencila 2.5.1",
             "url": "https://github.com/stencila/stencila"
         },
         {
@@ -123,7 +128,7 @@
             "description": "Specification and JSON Schemas used by the Stencila DNF Engine to validate and interpret dynamic documents.",
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "name": "Stencila DNF Engine Specification",
-            "url": "https://github.com/stencila/stencila/tree/v2.5.0/schema"
+            "url": "https://github.com/stencila/stencila/tree/v2.5.1/schema"
         },
         {
             "@id": "#dnf-evaluated-document",
@@ -131,7 +136,7 @@
                 "CreativeWork",
                 "SoftwareSourceCode"
             ],
-            "description": "Headless publicatoion.crate; does not contain evaluated DNF document",
+            "description": "Headless publication.crate; does not contain evaluated DNF document",
             "isBasedOn": [
                 {
                     "@id": "shoreline_publication.smd"
@@ -169,7 +174,7 @@
                 }
             ],
             "name": "LivePublication: A Dynamic and Reproducible Research Article",
-            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-07-26_18-09-53",
+            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-08-05_17-56-41",
             "wasGeneratedBy": [
                 {
                     "@id": "#dnf-presentation-environment"
