@@ -11,8 +11,9 @@ livepub_integration/micropub_tmp/
 livepub_integration/shoreline_tmp/
 livepub_integration/micropub_requests/
 livepub_integration/shoreline_requests/
+*_cache/
+fes2022b
 
 # Allow
 !data/*/*.csv
 !data/*/*.xlsx
-
