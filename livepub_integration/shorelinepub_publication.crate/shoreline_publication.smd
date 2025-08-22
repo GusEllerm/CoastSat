@@ -880,7 +880,6 @@ The number of valid data points per transect (`n_points_nonan`) ranges from `sum
 > min_zone_length = max(3, int(len(site_primary_data) / 10))  # Minimum of 3, or len(site_primary_data)//3
 > # Get areas of interest (AOIs) for the site
 > aois = run_narrative_zoning(site_id, cached_primary_result_path, min_zone_length=min_zone_length, zone_definitions=aoi_definitions, sort_by_priority=True)
-> print(aois)
 > aoi_zones = aois.get('zones', [])
 > all_transects = aois.get('transects', [])
 > ```
@@ -1228,9 +1227,9 @@ coastsat_version = interface_crate.mainEntity.get("version")
 publication_crate_version = publication_crate.mainEntity.get("url")
 ```
 
-This micropublication is part of the CoastSat project, which aims to monitor coastal change using satellite imagery.
+This publication is part of the CoastSat project, which aims to monitor coastal change using satellite imagery.
 It is based on `dict(type="Link", target=interface_crate_version, content=[dict(type="Text", value=f"this")])`{python exec} version of the _interface.crate_, and `dict(type="Link", target=coastsat_version, content=[dict(type="Text", value=f"this")])`{python exec} version of the CoastSat GitHub repository.
 
-> [!tip]- Micropublication publication.crate
+> [!tip]- Shoreline publication.crate
 > This publication.crate is available for download `dict(type="Link", target=publication_crate_version, content=[dict(type="Text", value=f"here")])`{python exec}.
-> It contains all data and resources required to reproduce the analysis and results presented in this micropublication.
+> It contains all data and resources required to reproduce the analysis and results presented in this publication.

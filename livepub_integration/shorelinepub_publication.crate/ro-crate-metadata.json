@@ -7,7 +7,7 @@
             "creator": {
                 "@id": "https://orcid.org/0000-0001-8260-231X"
             },
-            "datePublished": "2025-08-05T05:56:40+00:00",
+            "datePublished": "2025-08-08T01:54:20+00:00",
             "description": "This crate contains the interface.crate and a Stencila DNF document for generating publications.",
             "hasPart": [
                 {
@@ -51,7 +51,7 @@
             "description": "The unresolved dynamic narrative document serving as input to the DNF Engine.",
             "encodingFormat": "application/smd",
             "name": "DNF Document File",
-            "sha256": "1d0df8a7919960b3db5b68a4cbce41f5ffaef503fd48568ab1fc710573437a4f"
+            "sha256": "6a7cf47b24bb41da4a8260611db808a9afb43383babd2f71f153c58f6d76f9cd"
         },
         {
             "@id": "interface.crate/",
@@ -174,7 +174,7 @@
                 }
             ],
             "name": "LivePublication: A Dynamic and Reproducible Research Article",
-            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-08-05_17-56-41",
+            "url": "https://github.com/GusEllerm/CoastSat-shorelinepublication/releases/tag/shoreline-crate-2025-08-08_13-54-21",
             "wasGeneratedBy": [
                 {
                     "@id": "#dnf-presentation-environment"
