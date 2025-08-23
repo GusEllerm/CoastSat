@@ -252,6 +252,146 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
     .control-option.disabled:hover {
       background-color: white;
     }
+
+    /* Date range controls */
+    .control-section {
+      border-top: 1px solid #eee;
+      padding: 12px;
+      background-color: #fafafa;
+    }
+
+    .control-section.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .section-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .date-range-info {
+      font-size: 11px;
+      color: #666;
+      cursor: help;
+      opacity: 0.7;
+    }
+
+    .date-range-info:hover {
+      opacity: 1;
+    }
+
+    /* Active date range indicator */
+    .active-date-range {
+      margin-bottom: 10px;
+      background-color: #e6f3ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 4px;
+      padding: 6px 8px;
+      transition: all 0.3s ease;
+      transform-origin: top;
+      opacity: 1;
+      max-height: 100px;
+      overflow: hidden;
+    }
+
+    .active-date-range.hidden {
+      opacity: 0;
+      transform: scaleY(0);
+      max-height: 0;
+      margin-bottom: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .date-range-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .range-text {
+      color: #0066cc;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .range-clear {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 0 4px;
+      border-radius: 2px;
+      margin-left: 8px;
+      transition: background-color 0.2s ease;
+    }
+
+    .range-clear:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+
+    .date-range-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .date-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .date-input-group label {
+      font-size: 12px;
+      font-weight: 500;
+      min-width: 35px;
+      color: #555;
+    }
+
+    .date-input {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 12px;
+      background-color: white;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: #007ACC;
+      box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+    }
+
+    .date-reset {
+      margin-top: 4px;
+    }
+
+    .reset-btn {
+      padding: 4px 8px;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 11px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s ease;
+    }
+
+    .reset-btn:hover {
+      background-color: #e8e8e8;
+    }
   </style>
 </head>
 
@@ -289,11 +429,16 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           If you would like to suggest a new site, please use the polyline tool on the left to draw a reference
           shoreline. Once you do so, you can click the below button to send your shoreline to us via email.<br>
           <a id="mailto" target="_blank" class="btn btn-primary" disabled>Email Us</a>
-          <hr>
         <div style="margin-top: 1.5em; padding-top: 1em; border-top: 1px solid #ccc;">
           <strong>LivePublication Integration</strong><br>
           This site features LivePublication, an interactive tool that allows you to generate and view shoreline publications on demand. When you click a transect, LivePublication processes the latest shoreline data and presents a downloadable, publication-ready report directly in your browser. This integration provides real-time access to up-to-date shoreline analyses, making it easy to explore, share, and cite coastal changes for any monitored site.<br><br>
           <em>To use LivePublication, click the <b>"Enable LivePublications"</b> button in the toolbar. Then, click on any transect to generate a live shoreline publication for that site. Note: As this is a demonstration of how LivePublications may be generated live, they may take up to 1:30s to complete.</em><br><br>
+          
+          <strong>Custom Date Range Analysis:</strong><br>
+          When LivePublication is enabled, you can set a custom date range for your analysis using the date controls in the toolbar. 
+          This results in an additional section per shoreline publication, describing the data for this date range. This section is at the bottom of the report. 
+          This allows you to focus on specific time periods of interest, such as analysing shoreline changes during particular years or decades.
+          <br><br>
           
           <strong>Publication Repositories:</strong><br><br>
           <strong>Micropublication:</strong><br>
@@ -453,11 +598,16 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
       }
-      window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") === "true";
+      // LivePublication is now enabled by default, disabled only when explicitly set to false
+      window.ENABLE_LIVEPUBLICATIONS = getURLParameter("micro") !== "false";
       console.log("Set ENABLE_LIVEPUBLICATIONS to:", window.ENABLE_LIVEPUBLICATIONS);
       
       // Initialize transect visibility state
       window.SHOW_TRANSECTS = !window.ENABLE_LIVEPUBLICATIONS; // Default to false when micropublications are enabled, true otherwise
+
+      // Initialize date range variables for shoreline publications
+      window.SHORELINE_DATE_FROM = null; // Will be null for no restriction
+      window.SHORELINE_DATE_TO = null;   // Will be null for no restriction
 
       // Define loadShorelineGradients immediately if micropublications are enabled
       if (window.ENABLE_LIVEPUBLICATIONS) {
@@ -855,6 +1005,31 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                 <span>Show Transects</span>
                 <span class="status-indicator">OFF</span>
               </div>
+              <div class="control-section disabled" id="dateRangeSection">
+                <div class="section-header">
+                  <span>Publication Date Range</span>
+                  <span class="date-range-info" title="Set custom date range for shoreline analysis. Leave blank for full range (1984 onwards).">ℹ️</span>
+                </div>
+                <div class="active-date-range hidden" id="activeDateRange">
+                  <div class="date-range-display">
+                    <span class="range-text" id="rangeText">No range set</span>
+                    <button class="range-clear" id="rangeClear" title="Clear date range">×</button>
+                  </div>
+                </div>
+                <div class="date-range-controls">
+                  <div class="date-input-group">
+                    <label for="fromDate">From:</label>
+                    <input type="date" id="fromDate" class="date-input" min="1984-01-01">
+                  </div>
+                  <div class="date-input-group">
+                    <label for="toDate">To:</label>
+                    <input type="date" id="toDate" class="date-input" min="1984-01-01">
+                  </div>
+                  <div class="date-reset">
+                    <button id="resetDates" class="reset-btn">Reset to Full Range</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -872,6 +1047,56 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
       function setupToggleHandlers() {
         const livepubOption = document.getElementById("livepubOption");
         const transectOption = document.getElementById("transectOption");
+        const dateRangeSection = document.getElementById("dateRangeSection");
+        const fromDateInput = document.getElementById("fromDate");
+        const toDateInput = document.getElementById("toDate");
+        const resetDatesBtn = document.getElementById("resetDates");
+        const activeDateRange = document.getElementById("activeDateRange");
+        const rangeText = document.getElementById("rangeText");
+        const rangeClear = document.getElementById("rangeClear");
+        
+        // Set current date as default max for date inputs
+        const today = new Date().toISOString().split('T')[0];
+        if (fromDateInput) fromDateInput.max = today;
+        if (toDateInput) toDateInput.max = today;
+        
+        function updateDateRangeIndicator() {
+          if (!activeDateRange || !rangeText) return;
+          
+          const hasFrom = window.SHORELINE_DATE_FROM;
+          const hasTo = window.SHORELINE_DATE_TO;
+          
+          if (hasFrom || hasTo) {
+            // Format dates for display
+            const formatDate = (dateStr) => {
+              if (!dateStr) return null;
+              try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+              } catch {
+                return dateStr;
+              }
+            };
+            
+            let rangeString = "";
+            if (hasFrom && hasTo) {
+              rangeString = `${formatDate(hasFrom)} to ${formatDate(hasTo)}`;
+            } else if (hasFrom) {
+              rangeString = `From ${formatDate(hasFrom)}`;
+            } else if (hasTo) {
+              rangeString = `Until ${formatDate(hasTo)}`;
+            }
+            
+            rangeText.textContent = `Active range: ${rangeString}`;
+            activeDateRange.classList.remove('hidden');
+          } else {
+            activeDateRange.classList.add('hidden');
+          }
+        }
         
         function updateOptionStates() {
           // Update Live Publications option
@@ -905,6 +1130,18 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
               transectOption.querySelector('.status-indicator').textContent = 'OFF';
             }
           }
+          
+          // Update Date Range Section
+          if (dateRangeSection) {
+            if (window.ENABLE_LIVEPUBLICATIONS) {
+              dateRangeSection.classList.remove('disabled');
+            } else {
+              dateRangeSection.classList.add('disabled');
+            }
+          }
+          
+          // Update date range indicator
+          updateDateRangeIndicator();
         }
         
         // Set initial states
@@ -914,9 +1151,11 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
           livepubOption.addEventListener("click", function () {
             const url = new URL(window.location.href);
             if (window.ENABLE_LIVEPUBLICATIONS) {
-              url.searchParams.delete("micro");
+              // Currently enabled, so disable it
+              url.searchParams.set("micro", "false");
             } else {
-              url.searchParams.set("micro", "true");
+              // Currently disabled, so enable it (remove the false parameter)
+              url.searchParams.delete("micro");
             }
             window.location.href = url.toString();
           });
@@ -941,6 +1180,78 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
               var filtered_data = window.data.features.filter(f => window.layers.includes(f.properties.ERODIBILITY));
               plotData({ type: "FeatureCollection", features: filtered_data });
             }
+          });
+        }
+        
+        // Date input event handlers
+        if (fromDateInput) {
+          fromDateInput.addEventListener("change", function() {
+            window.SHORELINE_DATE_FROM = this.value || null;
+            console.log("Date range FROM changed to:", window.SHORELINE_DATE_FROM);
+            
+            // Update toDate minimum to be at least fromDate
+            if (toDateInput && this.value) {
+              toDateInput.min = this.value;
+            }
+            
+            // Update the visual indicator
+            updateDateRangeIndicator();
+          });
+        }
+        
+        if (toDateInput) {
+          toDateInput.addEventListener("change", function() {
+            window.SHORELINE_DATE_TO = this.value || null;
+            console.log("Date range TO changed to:", window.SHORELINE_DATE_TO);
+            
+            // Update fromDate maximum to be at most toDate
+            if (fromDateInput && this.value) {
+              fromDateInput.max = this.value;
+            } else if (fromDateInput) {
+              fromDateInput.max = today;
+            }
+            
+            // Update the visual indicator
+            updateDateRangeIndicator();
+          });
+        }
+        
+        if (resetDatesBtn) {
+          resetDatesBtn.addEventListener("click", function() {
+            if (fromDateInput) {
+              fromDateInput.value = "";
+              fromDateInput.max = today;
+            }
+            if (toDateInput) {
+              toDateInput.value = "";
+              toDateInput.min = "1984-01-01";
+            }
+            window.SHORELINE_DATE_FROM = null;
+            window.SHORELINE_DATE_TO = null;
+            console.log("Date range reset to full range");
+            
+            // Update the visual indicator
+            updateDateRangeIndicator();
+          });
+        }
+        
+        // Add event handler for the quick clear button in the date range indicator
+        if (rangeClear) {
+          rangeClear.addEventListener("click", function() {
+            if (fromDateInput) {
+              fromDateInput.value = "";
+              fromDateInput.max = today;
+            }
+            if (toDateInput) {
+              toDateInput.value = "";
+              toDateInput.min = "1984-01-01";
+            }
+            window.SHORELINE_DATE_FROM = null;
+            window.SHORELINE_DATE_TO = null;
+            console.log("Date range cleared via indicator");
+            
+            // Update the visual indicator
+            updateDateRangeIndicator();
           });
         }
       }

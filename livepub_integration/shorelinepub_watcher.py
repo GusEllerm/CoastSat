@@ -50,18 +50,50 @@ class ShorelinePubHandler(FileSystemEventHandler):
             print("⚠️  No 'id' field in request.")
             return
 
-def run_stencila_pipeline(site_id, unique_id):
+def run_stencila_pipeline(site_id, unique_id, date_from=None, date_to=None):
     base = os.path.join(TMP_DIR, unique_id)
     try:
-        print("🧪 Running Stencila pipeline for shoreline publication...")
+        print(f"🧪 Running Stencila pipeline for shoreline publication...")
+        if date_from or date_to:
+            print(f"📅 Date range: {date_from or 'earliest'} to {date_to or 'latest'}")
+        
         final_path = f"{base}.html"
-        subprocess.run([
+        
+        # Build command with optional date flags
+        cmd = [
             "python",
             os.path.join(PUBLICATION_CRATE, "publication_logic.py"),
             site_id,
             "--output",
             final_path
-        ], check=True)
+        ]
+        
+        # Add date flags if provided
+        if date_from:
+            # Convert from YYYY-MM-DD to DD-MM-YYYY format
+            try:
+                from datetime import datetime
+                parsed_date = datetime.strptime(date_from, "%Y-%m-%d")
+                formatted_date = parsed_date.strftime("%d-%m-%Y")
+                cmd.extend(["--from", formatted_date])
+                print(f"📅 Adding --from {formatted_date}")
+            except ValueError as e:
+                print(f"⚠️  Invalid date_from format: {date_from}, skipping")
+        
+        if date_to:
+            # Convert from YYYY-MM-DD to DD-MM-YYYY format
+            try:
+                from datetime import datetime
+                parsed_date = datetime.strptime(date_to, "%Y-%m-%d")
+                formatted_date = parsed_date.strftime("%d-%m-%Y")
+                cmd.extend(["--to", formatted_date])
+                print(f"📅 Adding --to {formatted_date}")
+            except ValueError as e:
+                print(f"⚠️  Invalid date_to format: {date_to}, skipping")
+        
+        print(f"🔧 Running command: {' '.join(cmd)}")
+        subprocess.run(cmd, check=True)
+        
         if os.path.exists(final_path):
             print(f"✅ Shoreline publication generated: shoreline_tmp/{unique_id}.html")
             print(f"🌐 Accessible at: http://localhost:8766/tmp/{unique_id}.html")
@@ -76,8 +108,8 @@ def run_stencila_pipeline(site_id, unique_id):
 @app.route("/request", methods=["POST", "OPTIONS"])
 def handle_request():
     """
-    Accepts a POST request with JSON body {"id": "..."} and writes a new request file
-    to livepub_integration/shoreline_requests/ to trigger the watcher.
+    Accepts a POST request with JSON body {"id": "...", "date_from": "YYYY-MM-DD", "date_to": "YYYY-MM-DD"} 
+    and generates a shoreline publication with optional date range filtering.
     """
     if request.method == "OPTIONS":
         return '', 204  # Preflight response
@@ -87,8 +119,17 @@ def handle_request():
     if not site_id:
         return jsonify({"error": "Missing 'id' field"}), 400
 
+    # Extract optional date parameters
+    date_from = data.get("date_from")  # Expected format: YYYY-MM-DD
+    date_to = data.get("date_to")      # Expected format: YYYY-MM-DD
+    
+    # Log the request details
+    print(f"📥 Shoreline publication request for {site_id}")
+    if date_from or date_to:
+        print(f"📅 Requested date range: {date_from or 'earliest'} to {date_to or 'latest'}")
+
     unique_id = f"{site_id}_{uuid.uuid4().hex}"
-    filename = run_stencila_pipeline(site_id, unique_id)
+    filename = run_stencila_pipeline(site_id, unique_id, date_from, date_to)
     if filename:
         return jsonify({"filename": filename}), 200
     else:

@@ -107,8 +107,13 @@ window.initShorelinePopup = function (feature, layer, map, e) {
 
   const payload = {
     id: site_id,
-    geometry: feature.geometry
+    geometry: feature.geometry,
+    // Add date range if specified
+    ...(window.SHORELINE_DATE_FROM && { date_from: window.SHORELINE_DATE_FROM }),
+    ...(window.SHORELINE_DATE_TO && { date_to: window.SHORELINE_DATE_TO })
   };
+
+  console.log('📅 Shoreline publication payload:', payload);
 
   fetch(`${SHORELINEPUB_API_BASE}/request`, {
     method: "POST",
