@@ -16,8 +16,25 @@ from shapely.geometry import LineString, Point
 from collections import defaultdict
 import time
 
+def normalize_longitude(lon):
+    """Normalize longitude to [-180, 180] range."""
+    while lon > 180:
+        lon -= 360
+    while lon < -180:
+        lon += 360
+    return lon
+
+def normalize_coordinates(coords):
+    """Normalize coordinates to handle longitude wrap-around."""
+    if isinstance(coords[0], list):
+        # LineString coordinates
+        return [[normalize_longitude(coord[0]), coord[1]] for coord in coords]
+    else:
+        # Point coordinates
+        return [normalize_longitude(coords[0]), coords[1]]
+
 def load_geojson(filename):
-    """Load a GeoJSON file."""
+    """Load GeoJSON file efficiently."""
     with open(filename, 'r') as f:
         return json.load(f)
 
@@ -221,7 +238,7 @@ def process_shoreline_gradients_fast():
         if transect['geometry']['type'] != 'LineString':
             continue
             
-        coords = transect['geometry']['coordinates']
+        coords = normalize_coordinates(transect['geometry']['coordinates'])
         bbox = get_bbox(coords)
         cells = get_grid_cells(bbox, cell_size)
         
@@ -278,7 +295,7 @@ def process_shoreline_gradients_fast():
         if shoreline['geometry']['type'] != 'LineString':
             continue
         
-        shoreline_coords = shoreline['geometry']['coordinates']
+        shoreline_coords = normalize_coordinates(shoreline['geometry']['coordinates'])
         shoreline_length = calculate_line_length(shoreline_coords)
         
         # Find nearby transects using spatial index
