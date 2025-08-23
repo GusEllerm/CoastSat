@@ -105,6 +105,47 @@ window.initShorelinePopup = function (feature, layer, map, e) {
     }
   }, 1000);
 
+  // Validate date range before sending request
+  function validateDateForRequest(dateStr) {
+    if (!dateStr) return true;
+    const date = new Date(dateStr);
+    const minDate = new Date('1984-01-01');
+    const maxDate = new Date(); // Today
+    return date >= minDate && date <= maxDate;
+  }
+
+  // Check if dates are valid before proceeding
+  if (window.SHORELINE_DATE_FROM && !validateDateForRequest(window.SHORELINE_DATE_FROM)) {
+    container.innerHTML = `<div class="shoreline-error">
+      <h3>❌ Invalid Date Range</h3>
+      <p>From date must be between 1984-01-01 and today.</p>
+      <p>Please adjust your date range in the toolbar and try again.</p>
+    </div>`;
+    clearInterval(timerInterval);
+    return;
+  }
+
+  if (window.SHORELINE_DATE_TO && !validateDateForRequest(window.SHORELINE_DATE_TO)) {
+    container.innerHTML = `<div class="shoreline-error">
+      <h3>❌ Invalid Date Range</h3>
+      <p>To date must be between 1984-01-01 and today.</p>
+      <p>Please adjust your date range in the toolbar and try again.</p>
+    </div>`;
+    clearInterval(timerInterval);
+    return;
+  }
+
+  if (window.SHORELINE_DATE_FROM && window.SHORELINE_DATE_TO && 
+      new Date(window.SHORELINE_DATE_FROM) > new Date(window.SHORELINE_DATE_TO)) {
+    container.innerHTML = `<div class="shoreline-error">
+      <h3>❌ Invalid Date Range</h3>
+      <p>From date cannot be after To date.</p>
+      <p>Please adjust your date range in the toolbar and try again.</p>
+    </div>`;
+    clearInterval(timerInterval);
+    return;
+  }
+
   const payload = {
     id: site_id,
     geometry: feature.geometry,

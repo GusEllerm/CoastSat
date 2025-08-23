@@ -1019,11 +1019,13 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
                 <div class="date-range-controls">
                   <div class="date-input-group">
                     <label for="fromDate">From:</label>
-                    <input type="date" id="fromDate" class="date-input" min="1984-01-01">
+                    <!-- max will be dynamically set to today's date by JavaScript -->
+                    <input type="date" id="fromDate" class="date-input" min="1984-01-01" max="2030-12-31">
                   </div>
                   <div class="date-input-group">
                     <label for="toDate">To:</label>
-                    <input type="date" id="toDate" class="date-input" min="1984-01-01">
+                    <!-- max will be dynamically set to today's date by JavaScript -->
+                    <input type="date" id="toDate" class="date-input" min="1984-01-01" max="2030-12-31">
                   </div>
                   <div class="date-reset">
                     <button id="resetDates" class="reset-btn">Reset to Full Range</button>
@@ -1057,8 +1059,51 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         
         // Set current date as default max for date inputs
         const today = new Date().toISOString().split('T')[0];
-        if (fromDateInput) fromDateInput.max = today;
-        if (toDateInput) toDateInput.max = today;
+        const minDate = "1984-01-01";
+        
+        console.log(`📅 Setting date input constraints: min=${minDate}, max=${today} (today)`);
+        
+        if (fromDateInput) {
+          fromDateInput.max = today;
+          fromDateInput.min = minDate;
+        }
+        if (toDateInput) {
+          toDateInput.max = today;
+          toDateInput.min = minDate;
+        }
+        
+        // Date validation function
+        function validateDate(dateString, inputElement) {
+          if (!dateString) return true; // Allow empty dates
+          
+          const date = new Date(dateString);
+          const minDateObj = new Date(minDate);
+          const maxDateObj = new Date(today);
+          
+          if (date < minDateObj || date > maxDateObj) {
+            // Show validation error
+            inputElement.setCustomValidity(`Date must be between ${minDate} and ${today}`);
+            inputElement.reportValidity();
+            return false;
+          } else {
+            // Clear any previous validation error
+            inputElement.setCustomValidity('');
+            return true;
+          }
+        }
+        
+        // Cross-validation function for date range
+        function validateDateRange(fromDate, toDate) {
+          if (!fromDate || !toDate) return true; // Allow partial ranges
+          
+          const fromDateObj = new Date(fromDate);
+          const toDateObj = new Date(toDate);
+          
+          if (fromDateObj > toDateObj) {
+            return false;
+          }
+          return true;
+        }
         
         function updateDateRangeIndicator() {
           if (!activeDateRange || !rangeText) return;
@@ -1186,12 +1231,34 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         // Date input event handlers
         if (fromDateInput) {
           fromDateInput.addEventListener("change", function() {
+            // Validate the date first
+            if (!validateDate(this.value, this)) {
+              // Invalid date, don't update the global variable
+              this.value = window.SHORELINE_DATE_FROM || "";
+              return;
+            }
+            
+            // Check cross-validation with toDate
+            if (toDateInput.value && !validateDateRange(this.value, toDateInput.value)) {
+              this.setCustomValidity("From date must be before or equal to To date");
+              this.reportValidity();
+              this.value = window.SHORELINE_DATE_FROM || "";
+              return;
+            }
+            
+            // Clear any validation errors on toDate if range is now valid
+            if (toDateInput.value && validateDateRange(this.value, toDateInput.value)) {
+              toDateInput.setCustomValidity('');
+            }
+            
             window.SHORELINE_DATE_FROM = this.value || null;
             console.log("Date range FROM changed to:", window.SHORELINE_DATE_FROM);
             
             // Update toDate minimum to be at least fromDate
             if (toDateInput && this.value) {
               toDateInput.min = this.value;
+            } else if (toDateInput) {
+              toDateInput.min = minDate;
             }
             
             // Update the visual indicator
@@ -1201,6 +1268,26 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
         
         if (toDateInput) {
           toDateInput.addEventListener("change", function() {
+            // Validate the date first
+            if (!validateDate(this.value, this)) {
+              // Invalid date, don't update the global variable
+              this.value = window.SHORELINE_DATE_TO || "";
+              return;
+            }
+            
+            // Check cross-validation with fromDate
+            if (fromDateInput.value && !validateDateRange(fromDateInput.value, this.value)) {
+              this.setCustomValidity("To date must be after or equal to From date");
+              this.reportValidity();
+              this.value = window.SHORELINE_DATE_TO || "";
+              return;
+            }
+            
+            // Clear any validation errors on fromDate if range is now valid
+            if (fromDateInput.value && validateDateRange(fromDateInput.value, this.value)) {
+              fromDateInput.setCustomValidity('');
+            }
+            
             window.SHORELINE_DATE_TO = this.value || null;
             console.log("Date range TO changed to:", window.SHORELINE_DATE_TO);
             
@@ -1221,10 +1308,14 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
             if (fromDateInput) {
               fromDateInput.value = "";
               fromDateInput.max = today;
+              fromDateInput.min = minDate;
+              fromDateInput.setCustomValidity(''); // Clear validation errors
             }
             if (toDateInput) {
               toDateInput.value = "";
-              toDateInput.min = "1984-01-01";
+              toDateInput.min = minDate;
+              toDateInput.max = today;
+              toDateInput.setCustomValidity(''); // Clear validation errors
             }
             window.SHORELINE_DATE_FROM = null;
             window.SHORELINE_DATE_TO = null;
@@ -1241,10 +1332,14 @@ https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.cs
             if (fromDateInput) {
               fromDateInput.value = "";
               fromDateInput.max = today;
+              fromDateInput.min = minDate;
+              fromDateInput.setCustomValidity(''); // Clear validation errors
             }
             if (toDateInput) {
               toDateInput.value = "";
-              toDateInput.min = "1984-01-01";
+              toDateInput.min = minDate;
+              toDateInput.max = today;
+              toDateInput.setCustomValidity(''); // Clear validation errors
             }
             window.SHORELINE_DATE_FROM = null;
             window.SHORELINE_DATE_TO = null;
