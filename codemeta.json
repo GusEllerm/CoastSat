@@ -4,7 +4,8 @@
   "name": "CoastSat dashboard with LivePublication integration (fork)",
   "description": "A fork of CoastSat that integrates LivePublication outputs into an interactive dashboard/map UI for thesis Chapter 6, including optional micropublication popups for transect exploration.",
   "codeRepository": "https://github.com/GusEllerm/CoastSat",
-  "version": "1.0.0",
+  "identifier": "https://doi.org/10.5281/zenodo.18252028",
+  "version": "1.0.1",
   "license": "MIT",
   "author": [
     {

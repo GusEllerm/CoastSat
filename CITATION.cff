@@ -2,7 +2,8 @@ cff-version: 1.2.0
 title: "CoastSat dashboard with LivePublication integration (fork)"
 message: "If you use this software, please cite it as below."
 type: software
-version: "1.0.0"
+version: "1.0.1"
+doi: 10.5281/zenodo.18252028
 authors:
   - family-names: Ellerm
     given-names: Augustus
@@ -21,7 +22,8 @@ keywords:
 preferred-citation:
   type: software
   title: "CoastSat dashboard with LivePublication integration (fork)"
-  version: "1.0.0"
+  version: "1.0.1"
+  doi: 10.5281/zenodo.18252028
   authors:
     - family-names: Ellerm
       given-names: Augustus

@@ -2,7 +2,7 @@
   "title": "CoastSat dashboard with LivePublication integration (fork)",
   "description": "Modified fork of CoastSat that integrates LivePublication outputs into a dashboard/map UI for thesis Chapter 6. This fork focuses on publication-aware integration and visualisation rather than the upstream shoreline extraction algorithms.",
   "upload_type": "software",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "access_right": "open",
   "creators": [
     {

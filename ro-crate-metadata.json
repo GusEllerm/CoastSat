@@ -4,7 +4,7 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "datePublished": "2026-01-15T04:10:45+00:00",
+      "datePublished": "2026-01-15T04:22:43+00:00",
       "description": "A fork of CoastSat that integrates LivePublication outputs into an interactive dashboard/map UI for thesis Chapter 6.",
       "hasPart": [
         {
@@ -44,12 +44,13 @@
           "@id": "update.sh"
         }
       ],
+      "identifier": "https://doi.org/10.5281/zenodo.18252028",
       "license": "https://spdx.org/licenses/MIT",
       "mainEntity": {
         "@id": "#software"
       },
       "name": "CoastSat dashboard with LivePublication integration (fork)",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "@id": "ro-crate-metadata.json",
@@ -72,10 +73,11 @@
       },
       "codeRepository": "https://github.com/GusEllerm/CoastSat",
       "description": "Modified CoastSat fork focused on LivePublication-aware dashboard integration and visualisation.",
+      "identifier": "https://doi.org/10.5281/zenodo.18252028",
       "isBasedOn": "https://github.com/UoA-eResearch/CoastSat",
       "license": "https://spdx.org/licenses/MIT",
       "name": "CoastSat dashboard with LivePublication integration (fork)",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "@id": ".zenodo.json",

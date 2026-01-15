@@ -20,7 +20,8 @@ def main() -> None:
         "A fork of CoastSat that integrates LivePublication outputs into an interactive "
         "dashboard/map UI for thesis Chapter 6."
     )
-    root["version"] = "1.0.0"
+    root["identifier"] = "https://doi.org/10.5281/zenodo.18252028"
+    root["version"] = "1.0.1"
     root["license"] = "https://spdx.org/licenses/MIT"
 
     software = crate.add(
@@ -35,7 +36,8 @@ def main() -> None:
                     "and visualisation."
                 ),
                 "codeRepository": "https://github.com/GusEllerm/CoastSat",
-                "version": "1.0.0",
+                "identifier": "https://doi.org/10.5281/zenodo.18252028",
+                "version": "1.0.1",
                 "license": "https://spdx.org/licenses/MIT",
                 "author": {
                     "@type": "Person",
