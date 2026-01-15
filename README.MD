@@ -1,4 +1,4 @@
-# CoastSat dashboard with LivePublication integration (fork) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18252095.svg)](https://doi.org/10.5281/zenodo.18252095)
+# CoastSat dashboard with LivePublication integration (fork) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18252170.svg)](https://doi.org/10.5281/zenodo.18252170)
 
 
 > - This repository is a fork/derivative of upstream CoastSat: https://github.com/UoA-eResearch/CoastSat [![DOI](https://zenodo.org/badge/829830765.svg)](https://zenodo.org/doi/10.5281/zenodo.13835882)
@@ -29,7 +29,7 @@ Live dashboard: https://coastsat.livepublication.org/
 - LivePublication inputs (used for micropublications): shoreline and micropublication crates from the related artefacts list below.
 
 ## How to cite
-Cite the Zenodo DOI: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18252095.svg)](https://doi.org/10.5281/zenodo.18252095)
+Cite the Zenodo DOI: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18252170.svg)](https://doi.org/10.5281/zenodo.18252170)
 
 ## Related artefacts (DOIs + repos)
 - Upstream CoastSat baseline repo: https://github.com/UoA-eResearch/CoastSat
