@@ -1,0 +1,66 @@
+{
+  "title": "CoastSat dashboard with LivePublication integration (fork)",
+  "description": "Modified fork of CoastSat that integrates LivePublication outputs into a dashboard/map UI for thesis Chapter 6. This fork focuses on publication-aware integration and visualisation rather than the upstream shoreline extraction algorithms.",
+  "upload_type": "software",
+  "version": "1.0.0",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Ellerm, Augustus",
+      "orcid": "0000-0001-8260-231X"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "CoastSat",
+    "dashboard",
+    "LivePublication",
+    "micropublications",
+    "RO-Crate",
+    "interactive map"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/GusEllerm/CoastSat",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/UoA-eResearch/CoastSat",
+      "relation": "isDerivedFrom",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.18250478",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "10.5281/zenodo.18250232",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.18250033",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "10.5281/zenodo.18250889",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://coastsat.livepublication.org/",
+      "relation": "references",
+      "scheme": "url",
+      "resource_type": "publication"
+    }
+  ]
+}

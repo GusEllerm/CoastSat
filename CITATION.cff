@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "CoastSat dashboard with LivePublication integration (fork)"
+message: "If you use this software, please cite it as below."
+type: software
+version: "1.0.0"
+authors:
+  - family-names: Ellerm
+    given-names: Augustus
+    orcid: https://orcid.org/0000-0001-8260-231X
+repository-code: https://github.com/GusEllerm/CoastSat
+url: https://github.com/GusEllerm/CoastSat
+abstract: "This repository is a fork of CoastSat that integrates LivePublication outputs into an interactive dashboard/map UI for thesis Chapter 6, including a Leaflet-based map with transect time-series visualisation and optional micropublication popups."
+license: MIT
+keywords:
+  - CoastSat
+  - dashboard
+  - LivePublication
+  - micropublications
+  - RO-Crate
+  - interactive map
+preferred-citation:
+  type: software
+  title: "CoastSat dashboard with LivePublication integration (fork)"
+  version: "1.0.0"
+  authors:
+    - family-names: Ellerm
+      given-names: Augustus
+      orcid: https://orcid.org/0000-0001-8260-231X
+  url: https://github.com/GusEllerm/CoastSat
+  license: MIT
+references:
+  - type: software
+    title: "CoastSat (upstream)"
+    url: https://github.com/UoA-eResearch/CoastSat

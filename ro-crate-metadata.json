@@ -1,0 +1,141 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "datePublished": "2026-01-15T04:10:45+00:00",
+      "description": "A fork of CoastSat that integrates LivePublication outputs into an interactive dashboard/map UI for thesis Chapter 6.",
+      "hasPart": [
+        {
+          "@id": ".zenodo.json"
+        },
+        {
+          "@id": "CITATION.cff"
+        },
+        {
+          "@id": "LICENSE"
+        },
+        {
+          "@id": "README.MD"
+        },
+        {
+          "@id": "batch_process_NZ.py"
+        },
+        {
+          "@id": "codemeta.json"
+        },
+        {
+          "@id": "index.html"
+        },
+        {
+          "@id": "new_sites.html"
+        },
+        {
+          "@id": "requirements.txt"
+        },
+        {
+          "@id": "scripts/generate_ro_crate.py"
+        },
+        {
+          "@id": "scripts/validate_metadata.py"
+        },
+        {
+          "@id": "update.sh"
+        }
+      ],
+      "license": "https://spdx.org/licenses/MIT",
+      "mainEntity": {
+        "@id": "#software"
+      },
+      "name": "CoastSat dashboard with LivePublication integration (fork)",
+      "version": "1.0.0"
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      }
+    },
+    {
+      "@id": "#software",
+      "@type": "SoftwareSourceCode",
+      "author": {
+        "@id": "https://orcid.org/0000-0001-8260-231X",
+        "@type": "Person",
+        "familyName": "Ellerm",
+        "givenName": "Augustus"
+      },
+      "codeRepository": "https://github.com/GusEllerm/CoastSat",
+      "description": "Modified CoastSat fork focused on LivePublication-aware dashboard integration and visualisation.",
+      "isBasedOn": "https://github.com/UoA-eResearch/CoastSat",
+      "license": "https://spdx.org/licenses/MIT",
+      "name": "CoastSat dashboard with LivePublication integration (fork)",
+      "version": "1.0.0"
+    },
+    {
+      "@id": ".zenodo.json",
+      "@type": "File",
+      "name": ".zenodo.json"
+    },
+    {
+      "@id": "CITATION.cff",
+      "@type": "File",
+      "name": "CITATION.cff"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "File",
+      "name": "LICENSE"
+    },
+    {
+      "@id": "README.MD",
+      "@type": "File",
+      "name": "README.MD"
+    },
+    {
+      "@id": "batch_process_NZ.py",
+      "@type": "File",
+      "name": "batch_process_NZ.py"
+    },
+    {
+      "@id": "codemeta.json",
+      "@type": "File",
+      "name": "codemeta.json"
+    },
+    {
+      "@id": "index.html",
+      "@type": "File",
+      "name": "index.html"
+    },
+    {
+      "@id": "new_sites.html",
+      "@type": "File",
+      "name": "new_sites.html"
+    },
+    {
+      "@id": "requirements.txt",
+      "@type": "File",
+      "name": "requirements.txt"
+    },
+    {
+      "@id": "scripts/generate_ro_crate.py",
+      "@type": "File",
+      "name": "scripts/generate_ro_crate.py"
+    },
+    {
+      "@id": "scripts/validate_metadata.py",
+      "@type": "File",
+      "name": "scripts/validate_metadata.py"
+    },
+    {
+      "@id": "update.sh",
+      "@type": "File",
+      "name": "update.sh"
+    }
+  ]
+}

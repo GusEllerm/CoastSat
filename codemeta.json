@@ -1,0 +1,31 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "CoastSat dashboard with LivePublication integration (fork)",
+  "description": "A fork of CoastSat that integrates LivePublication outputs into an interactive dashboard/map UI for thesis Chapter 6, including optional micropublication popups for transect exploration.",
+  "codeRepository": "https://github.com/GusEllerm/CoastSat",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": [
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0001-8260-231X",
+      "givenName": "Augustus",
+      "familyName": "Ellerm"
+    }
+  ],
+  "keywords": [
+    "CoastSat",
+    "dashboard",
+    "LivePublication",
+    "micropublications",
+    "RO-Crate",
+    "interactive map"
+  ],
+  "programmingLanguage": [
+    "Python",
+    "HTML",
+    "JavaScript"
+  ],
+  "isBasedOn": "https://github.com/UoA-eResearch/CoastSat"
+}
