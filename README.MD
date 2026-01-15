@@ -1,6 +1,5 @@
 # CoastSat dashboard with LivePublication integration (fork)
 
-> #### Fork provenance (MANDATORY)
 > - This repository is a fork/derivative of upstream CoastSat: https://github.com/UoA-eResearch/CoastSat [![DOI](https://zenodo.org/badge/829830765.svg)](https://zenodo.org/doi/10.5281/zenodo.13835882)
 > - Purpose of this fork: integrate LivePublication outputs (shoreline + micropublications) into a dashboard/map UI (Chapter 6).
 > - High-level summary of modifications (this fork vs upstream):
